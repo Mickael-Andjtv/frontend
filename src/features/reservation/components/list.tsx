@@ -28,6 +28,7 @@ import {
   Calendar as CalendarIcon,
   Filter,
 } from "lucide-react";
+import { ConfirmMoveModal } from "@/components/layout/confirm-move";
 
 type Props = {
   reservationData: Reservation[];
@@ -35,7 +36,7 @@ type Props = {
   onUpdateReservation?: (
     reservationId: string,
     newTableId: string,
-    newTime: string,
+    newTime: string
   ) => void;
 };
 
@@ -85,6 +86,15 @@ const ListReservation = ({
   const [start, setStart] = useState(0);
   const [selectedDate, setSelectedDate] = useState("2026-08-30");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
+
+  // State pour la modale de confirmation
+  const [pendingMove, setPendingMove] = useState<{
+    reservationId: string;
+    targetTableId: string;
+    targetTableName?: string;
+    targetTime: string;
+  } | null>(null);
+
   const itemsPerPage = 5;
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -98,7 +108,7 @@ const ListReservation = ({
       (r) =>
         r.tableId === targetTableId &&
         r.reservationTime === targetTime &&
-        r.id !== reservationId,
+        r.id !== reservationId
     );
 
     if (isOccupied) {
@@ -106,17 +116,35 @@ const ListReservation = ({
       return;
     }
 
+    const targetTable = tabledata.find((t) => t.id === targetTableId);
+
+    // Ouvre la modale en stockant les infos du déplacement
+    setPendingMove({
+      reservationId,
+      targetTableId,
+      targetTableName: targetTable ? `Table ${targetTable.num}` : undefined,
+      targetTime,
+    });
+  };
+
+  const confirmMove = () => {
+    if (!pendingMove) return;
+
+    const { reservationId, targetTableId, targetTime } = pendingMove;
+
     setReservations((prev) =>
       prev.map((r) =>
         r.id === reservationId
           ? { ...r, tableId: targetTableId, reservationTime: targetTime }
-          : r,
-      ),
+          : r
+      )
     );
 
     if (onUpdateReservation) {
       onUpdateReservation(reservationId, targetTableId, targetTime);
     }
+
+    setPendingMove(null);
   };
 
   const filteredReservations = reservations.filter((r) => {
@@ -235,7 +263,7 @@ const ListReservation = ({
 
                 {visibleTable.map((t) => {
                   const filter = filteredReservations.find(
-                    (r) => r.tableId === t.id && r.reservationTime === ck,
+                    (r) => r.tableId === t.id && r.reservationTime === ck
                   );
                   const dropId = `${t.id}|${ck}`;
 
@@ -258,6 +286,13 @@ const ListReservation = ({
             ))}
           </TableBody>
         </Table>
+
+        <ConfirmMoveModal
+          isOpen={!!pendingMove}
+          moveDetails={pendingMove}
+          onConfirm={confirmMove}
+          onCancel={() => setPendingMove(null)}
+        />
       </div>
     </DndContext>
   );
