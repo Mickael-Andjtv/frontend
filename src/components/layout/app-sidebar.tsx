@@ -24,7 +24,7 @@ import Image from "next/image";
 
 const items = [
   { title: "Tableau de bord", url: "/inventory/dashboard", icon: MonitorCloud },
-  { title: "Table", url: "/inventory/products", icon: Package },
+  { title: "Table", url: "/restaurant-table", icon: Package },
   { title: "Réservation", url: "/inventory/orders", icon: ShoppingCart },
   { title: "Commande", url: "/inventory/settings", icon: Settings },
   { title: "Menu", url: "/inventory/clients", icon: FileUser },
@@ -38,7 +38,7 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <div className="relative h-full w-full group-data-[collapsible=icon]:hidden">
+        <div className="relative h-full w-full group-data-[collapsible=icon]:hidden ">
           <Image
             src="/images/logo-full.svg"
             alt="logo"

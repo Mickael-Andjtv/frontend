@@ -6,15 +6,26 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { RestaurantTable } from "../types/table";
+import { useState } from "react";
 
 type Props = {
   resTable: RestaurantTable;
-  onDelete?: (id: string) => void; 
+  onDelete?: (id: string) => void;
 };
 
 const TableCard = ({ resTable, onDelete }: Props) => {
+  const [status, setStatus] = useState(resTable.status);
   const getBadgeVariant = (status: string) => {
     switch (status) {
       case "AVAILABLE":
@@ -34,9 +45,32 @@ const TableCard = ({ resTable, onDelete }: Props) => {
         <CardTitle className="text-lg font-bold">
           Table N° {resTable.num}
         </CardTitle>
-        <Badge variant={getBadgeVariant(resTable.status)}>
-          {resTable.status}
-        </Badge>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            className={"cursor-pointer"}
+            render={
+              <Badge variant={getBadgeVariant(resTable.status)}>
+                {resTable.status}
+              </Badge>
+            }
+          />
+          <DropdownMenuContent className="w-32">
+            <DropdownMenuGroup>
+              <DropdownMenuRadioGroup value={status} onValueChange={setStatus}>
+                <DropdownMenuRadioItem value="AVAILABLE">
+                  DISPO
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="OCCUPIED">
+                  OCCUPÉ
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="RESERVED">
+                  RESERVÉ
+                </DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </CardHeader>
 
       <CardContent>
@@ -52,7 +86,7 @@ const TableCard = ({ resTable, onDelete }: Props) => {
         <Button
           variant="destructive"
           size="sm"
-          className={'rounded-none'}
+          className={"rounded-none"}
           // onClick={() => onDelete && onDelete(resTable.id)}
         >
           Supprimer

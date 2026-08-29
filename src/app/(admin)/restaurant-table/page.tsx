@@ -1,13 +1,13 @@
-'use client'
+"use client";
 
-import ListAdd from "@/features/restaurant-table/components/list";
+import RestaurantTableView from "@/features/restaurant-table/views/restaurant-table-view";
 
-const ReservationTablePage = () => {
+const RestaurantTablePage = () => {
   return (
     <div>
-      T<ListAdd />
+      <RestaurantTableView />
     </div>
   );
 };
 
-export default ReservationTablePage;
+export default RestaurantTablePage;
