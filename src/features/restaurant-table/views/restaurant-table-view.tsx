@@ -4,7 +4,9 @@ import AddTable from "./add-table";
 
 const RestaurantTableView = () => {
   return (
-    <div className="p-4">
+    <div className="px-4">
+      <h1 className="text-xl font-bold">Tables</h1>
+
       <AddTable />
       <ListTable restaurantTables={MOCK_TABLES} />
     </div>

@@ -163,7 +163,7 @@ const ListReservation = ({
   return (
     <DndContext onDragEnd={handleDragEnd}>
       <div className="w-full bg-white border border-slate-200 shadow-sm overflow-hidden flex flex-col gap-0">
-        <h1 className="font-bold text-xl pl-4 pt-4">Réservations</h1>
+        <h1 className="font-bold text-xl pl-4 bg-slate-50">Réservations</h1>
         <div className="p-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-4 bg-slate-50/50">
           <div className="flex items-center gap-3">
             <div className="relative flex items-center">

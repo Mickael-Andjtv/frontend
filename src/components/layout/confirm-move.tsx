@@ -33,7 +33,7 @@ export const ConfirmMoveModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onCancel()}>
-      <DialogContent className="sm:max-w-106.25rounded-none">
+      <DialogContent className="sm:max-w-106.25 rounded-none">
         <DialogHeader>
           <DialogTitle>Confirmer le déplacement</DialogTitle>
           <DialogDescription className="pt-2 text-sm text-slate-600">
