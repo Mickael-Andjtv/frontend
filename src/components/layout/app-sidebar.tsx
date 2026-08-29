@@ -25,7 +25,7 @@ import Image from "next/image";
 const items = [
   { title: "Tableau de bord", url: "/inventory/dashboard", icon: MonitorCloud },
   { title: "Table", url: "/restaurant-table", icon: Package },
-  { title: "Réservation", url: "/inventory/orders", icon: ShoppingCart },
+  { title: "Réservation", url: "/reservation", icon: ShoppingCart },
   { title: "Commande", url: "/inventory/settings", icon: Settings },
   { title: "Menu", url: "/inventory/clients", icon: FileUser },
   { title: "Client", url: "/inventory/settings", icon: Settings },
