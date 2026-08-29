@@ -10,6 +10,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ReservationCard, ReservationEmptyCard } from "./reservation-card";
+import { ButtonGroup } from "@/components/ui/button-group";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 type Props = {
   reservationData: Reservation[];
@@ -37,7 +40,19 @@ const ListReservation = ({ reservationData, tabledata }: Props) => {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="w-0">XX</TableHead>
+          <TableHead className="w-0">
+            <ButtonGroup
+            orientation={'vertical'}
+            className="h-fit"
+            >
+              <Button size={"icon-sm"} className={"bg-white text-gray-900 border-2 border-gray-100 hover:bg-gray-300"}>
+                <ArrowRight />
+              </Button>
+              <Button size={"icon-sm"} className={"bg-white text-gray-900 border-2 border-gray-100 hover:bg-gray-300"}>
+                <ArrowLeft />
+              </Button>
+            </ButtonGroup>
+          </TableHead>
           {tabledata.map((t, i) => (
             <TableHead className="border  text-center uppercase" key={i}>
               {" "}
@@ -48,12 +63,11 @@ const ListReservation = ({ reservationData, tabledata }: Props) => {
       </TableHeader>
       <TableBody>
         {CRENAUX.map((ck, i) => (
-          <TableRow key={i} >
+          <TableRow key={i}>
             <TableCell>{ck}</TableCell>
             {tabledata.map((t, index) => {
               const filter = reservationData.find(
                 (r) => r.tableId == t.id && r.reservationTime == ck,
-                
               );
               return (
                 <TableCell key={index}>
@@ -61,8 +75,7 @@ const ListReservation = ({ reservationData, tabledata }: Props) => {
                     <ReservationCard
                       dateEnd={filter.reservationTime}
                       status={filter.status.toLocaleLowerCase()}
-                      description={filter.specialRequest??''}
-                      
+                      description={filter.specialRequest ?? ""}
                     />
                   ) : (
                     <ReservationEmptyCard />
