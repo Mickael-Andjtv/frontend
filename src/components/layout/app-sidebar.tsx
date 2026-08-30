@@ -26,9 +26,9 @@ const items = [
   { title: "Tableau de bord", url: "/inventory/dashboard", icon: MonitorCloud },
   { title: "Table", url: "/restaurant-table", icon: Package },
   { title: "Réservation", url: "/reservation", icon: ShoppingCart },
-  { title: "Commande", url: "/inventory/settings", icon: Settings },
-  { title: "Menu", url: "/inventory/clients", icon: FileUser },
-  { title: "Client", url: "/inventory/settings", icon: Settings },
+  { title: "Commande", url: "/order", icon: Settings },
+  { title: "Menu", url: "/menu", icon: FileUser },
+  { title: "Client", url: "/customer", icon: Settings },
 
 ];
 
