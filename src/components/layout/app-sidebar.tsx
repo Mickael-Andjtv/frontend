@@ -12,24 +12,24 @@ import {
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import {
-  Package,
-  ShoppingCart,
-  Settings,
-  MonitorCloud,
-  FileUser,
+  LayoutDashboard,
+  SquareDot,
+  CalendarDays,
+  Receipt,
+  UtensilsCrossed,
+  Users,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 
 const items = [
-  { title: "Tableau de bord", url: "/inventory/dashboard", icon: MonitorCloud },
-  { title: "Table", url: "/restaurant-table", icon: Package },
-  { title: "Réservation", url: "/reservation", icon: ShoppingCart },
-  { title: "Commande", url: "/order", icon: Settings },
-  { title: "Menu", url: "/menu", icon: FileUser },
-  { title: "Client", url: "/customer", icon: Settings },
-
+  { title: "Tableau de bord", url: "/inventory/dashboard", icon: LayoutDashboard },
+  { title: "Table", url: "/restaurant-table", icon: SquareDot },
+  { title: "Réservation", url: "/reservation", icon: CalendarDays },
+  { title: "Commande", url: "/order", icon: Receipt },
+  { title: "Menu", url: "/menu", icon: UtensilsCrossed },
+  { title: "Client", url: "/client", icon: Users },
 ];
 
 export function AppSidebar() {
@@ -38,11 +38,10 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <div className="relative h-full w-full group-data-[collapsible=icon]:hidden ">
+        <div className="relative h-full w-full group-data-[collapsible=icon]:hidden">
           <Image
             src="/images/logo-full.svg"
             alt="logo"
-            // fill
             width={200}
             height={0}
             className="object-contain object-left"
@@ -71,7 +70,7 @@ export function AppSidebar() {
                     <SidebarMenuButton
                       className={cn(
                         "hover:bg-gray-200 transition-colors rounded-none",
-                        isActive && "bg-gray-300 font-semibold text-primary",
+                        isActive && "bg-gray-300 font-semibold text-primary"
                       )}
                     >
                       <Link

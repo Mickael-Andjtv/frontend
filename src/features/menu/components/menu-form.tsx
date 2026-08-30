@@ -27,13 +27,7 @@ import LabelComponent from "@/components/layout/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { ImageUp, X } from "lucide-react";
-
-type ImageItem = {
-  id: string;
-  url: string;
-  file?: File;
-  isExisting?: boolean;
-};
+import { ImageItem } from "@/types/image-items";
 
 type Props = {
   triggerBtn?: React.ReactElement;
