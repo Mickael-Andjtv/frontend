@@ -193,7 +193,7 @@ const MenuListComponent = ({
             }`}
             onClick={() => setIsVegetarianOnly(!isVegetarianOnly)}
           >
-            🌱 Végétarien
+            Végétarien
           </Badge>
 
           <Badge
@@ -201,7 +201,7 @@ const MenuListComponent = ({
             className="cursor-pointer"
             onClick={() => setIsGlutenFreeOnly(!isGlutenFreeOnly)}
           >
-            🌾 Sans Gluten
+             Sans Gluten
           </Badge>
         </div>
       </div>
