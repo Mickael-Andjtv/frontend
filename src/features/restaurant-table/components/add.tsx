@@ -23,6 +23,7 @@ export function AddTableComponet({ addBtn }: Props) {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger render={addBtn} />
+      
       <SheetContent>
         <SheetHeader>
           <SheetTitle className={"text-2xl"}>Ajouter Un Menu</SheetTitle>

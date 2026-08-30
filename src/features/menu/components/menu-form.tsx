@@ -61,7 +61,6 @@ export function MenuFormSheet({
 
   const isEditing = Boolean(initialData);
 
-  // Initialisation directe de l'état sans useEffect
   const [images, setImages] = useState<ImageItem[]>(() =>
     initialData?.imageUrl
       ? initialData.imageUrl.map((url) => ({ id: url, url, isExisting: true }))

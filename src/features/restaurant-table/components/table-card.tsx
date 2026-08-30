@@ -48,6 +48,7 @@ const TableCard = ({ resTable, onDelete }: Props) => {
 
         <DropdownMenu>
           <DropdownMenuTrigger
+          nativeButton={false}
             className={"cursor-pointer"}
             render={
               <Badge variant={getBadgeVariant(resTable.status)}>
