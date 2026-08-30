@@ -22,7 +22,7 @@ export type MenuItem = {
   name: string;
   description?: string;
   price: number;
-  imageUrl: string;
+  imageUrl: string[];
   status: ItemStatus;
   isVegetarian?: boolean;
   isGlutenFree?: boolean;

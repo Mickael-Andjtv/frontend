@@ -16,25 +16,29 @@ import { MenuItem } from "../types/menu.types";
 import { MenuCardAdmin } from "./menu-card-admin";
 import { MenuCardClient } from "./menu-card-client";
 
+type CategoryOption = { id: string; name: string };
+
 type Props = {
   menuItems: MenuItem[];
+  categories?: CategoryOption[];
   isAdmin?: boolean;
   onAddToCart?: (item: MenuItem, quantity: number) => void;
-  onEdit?: (item: MenuItem) => void;
+  onEditSubmit?: (
+    data: Partial<MenuItem> & { imageFiles?: File[]; existingUrls?: string[] },
+  ) => void;
   onDelete?: (id: string) => void;
   onToggleStatus?: (id: string, isAvailable: boolean) => void;
 };
 
 const MenuListComponent = ({
   menuItems,
+  categories = [],
   isAdmin = false,
   onAddToCart,
-  onEdit,
+  onEditSubmit,
   onDelete,
   onToggleStatus,
 }: Props) => {
-  const Card = isAdmin ? MenuCardAdmin : MenuCardClient;
-
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
   const [isVegetarianOnly, setIsVegetarianOnly] = useState(false);
@@ -43,10 +47,13 @@ const MenuListComponent = ({
     "name",
   );
 
-  const categories = useMemo(() => {
-    const cats = menuItems.map((item) => item.categoryId);
-    return Array.from(new Set(cats));
-  }, [menuItems]);
+  const availableCategories = useMemo(() => {
+    if (categories.length > 0) return categories;
+    const catIds = Array.from(
+      new Set(menuItems.map((item) => item.categoryId)),
+    );
+    return catIds.map((id) => ({ id, name: `Catégorie ${id}` }));
+  }, [categories, menuItems]);
 
   const filteredItems = useMemo(() => {
     return menuItems
@@ -93,7 +100,7 @@ const MenuListComponent = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 bg-white p-4  border border-slate-200 shadow-sm">
+      <div className="flex flex-col gap-4 bg-white p-4 border border-slate-200 shadow-sm">
         <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
           <div className="relative w-full md:w-80">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -125,18 +132,19 @@ const MenuListComponent = ({
               <SelectTrigger className="w-40 rounded-none">
                 <SelectValue placeholder="Trier par" />
               </SelectTrigger>
-              <SelectContent className={"rounded-none"}>
-                <SelectItem value="name" className={"rounded-none"}>
+              <SelectContent className="rounded-none">
+                <SelectItem value="name" className="rounded-none">
                   Nom (A-Z)
                 </SelectItem>
-                <SelectItem value="price-asc" className={"rounded-none"}>
+                <SelectItem value="price-asc" className="rounded-none">
                   Prix croissant
                 </SelectItem>
-                <SelectItem value="price-desc" className={"rounded-none"}>
+                <SelectItem value="price-desc" className="rounded-none">
                   Prix décroissant
                 </SelectItem>
               </SelectContent>
             </Select>
+
             {hasActiveFilters && (
               <Button
                 variant="ghost"
@@ -163,14 +171,14 @@ const MenuListComponent = ({
             Toutes
           </Badge>
 
-          {categories.map((catId) => (
+          {availableCategories.map((cat) => (
             <Badge
-              key={catId}
-              variant={selectedCategory === catId ? "default" : "outline"}
+              key={cat.id}
+              variant={selectedCategory === cat.id ? "default" : "outline"}
               className="cursor-pointer"
-              onClick={() => setSelectedCategory(catId)}
+              onClick={() => setSelectedCategory(cat.id)}
             >
-              Catégorie {catId.replace("cat-", "")}
+              {cat.name}
             </Badge>
           ))}
 
@@ -179,7 +187,9 @@ const MenuListComponent = ({
           <Badge
             variant={isVegetarianOnly ? "default" : "outline"}
             className={`cursor-pointer ${
-              isVegetarianOnly ? "bg-emerald-600 hover:bg-emerald-700" : ""
+              isVegetarianOnly
+                ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                : ""
             }`}
             onClick={() => setIsVegetarianOnly(!isVegetarianOnly)}
           >
@@ -198,16 +208,24 @@ const MenuListComponent = ({
 
       {filteredItems.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filteredItems.map((item) => (
-            <Card
-              key={item.id}
-              menuItem={item}
-              onAddToCart={onAddToCart}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              onToggleStatus={onToggleStatus}
-            />
-          ))}
+          {filteredItems.map((item) =>
+            isAdmin ? (
+              <MenuCardAdmin
+                key={item.id}
+                menuItem={item}
+                categories={availableCategories}
+                onEditSubmit={onEditSubmit}
+                onDelete={onDelete}
+                onToggleStatus={onToggleStatus}
+              />
+            ) : (
+              <MenuCardClient
+                key={item.id}
+                menuItem={item}
+                onAddToCart={onAddToCart}
+              />
+            ),
+          )}
         </div>
       ) : (
         <div className="text-center py-12 border border-dashed border-slate-200 rounded-xl">

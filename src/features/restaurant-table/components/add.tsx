@@ -11,18 +11,21 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { useState } from "react";
 
 type Props = {
   addBtn: React.ReactElement;
 };
 
 export function AddTableComponet({ addBtn }: Props) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger render={addBtn} />
       <SheetContent>
         <SheetHeader>
-          <SheetTitle className={"text-2xl"}>Ajouter Un Table</SheetTitle>
+          <SheetTitle className={"text-2xl"}>Ajouter Un Menu</SheetTitle>
           <SheetDescription>
             Tous les informations sont nécessaire
           </SheetDescription>

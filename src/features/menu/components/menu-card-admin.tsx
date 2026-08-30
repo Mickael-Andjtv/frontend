@@ -1,4 +1,5 @@
-import React from "react";
+"use client";
+
 import { EyeOff, Layers, Edit, Trash2 } from "lucide-react";
 import { CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,17 +7,22 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { MenuItem } from "../types/menu.types";
 import { BaseMenuCard } from "./base-menu-card";
+import { MenuFormSheet } from "./menu-form";
 
 type PropsAdmin = {
   menuItem: MenuItem;
-  onEdit?: (item: MenuItem) => void;
+  categories?: { id: string; name: string }[];
+  onEditSubmit?: (
+    data: Partial<MenuItem> & { imageFiles?: File[]; existingUrls?: string[] },
+  ) => void;
   onDelete?: (id: string) => void;
   onToggleStatus?: (id: string, isAvailable: boolean) => void;
 };
 
 export const MenuCardAdmin = ({
   menuItem,
-  onEdit,
+  categories = [],
+  onEditSubmit,
   onDelete,
   onToggleStatus,
 }: PropsAdmin) => {
@@ -60,14 +66,22 @@ export const MenuCardAdmin = ({
       </div>
 
       <div className="flex items-center gap-1">
-        <Button
-          size="icon"
-          variant="ghost"
-          className="h-8 w-8 text-slate-600 hover:text-slate-900"
-          onClick={() => onEdit?.(menuItem)}
-        >
-          <Edit className="h-4 w-4" />
-        </Button>
+        <MenuFormSheet
+          key={menuItem.id}
+          initialData={menuItem}
+          categories={categories}
+          onSubmit={onEditSubmit}
+          triggerBtn={
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8 text-slate-600 hover:text-slate-900"
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+          }
+        />
+
         <Button
           size="icon"
           variant="ghost"

@@ -8,9 +8,9 @@ type Props = {
 
 const LabelComponent = ({ htmfor, required, name }: Props) => {
   return (
-    <Label htmlFor={htmfor} className="italic">
+    <Label htmlFor={htmfor}>
       {name}
-      {required && <strong className="text-red-500 text-2xl">*</strong>}
+      {required && <strong className="text-red-500">*</strong>}
     </Label>
   );
 };
