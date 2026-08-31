@@ -3,4 +3,7 @@ export type RestaurantTable = {
   num: number;
   capacity: number;
   status: "AVAILABLE" | "OCCUPIED" | "RESERVED" | "UNAVAILABLE";
+  /* 
+  place:"ENDROIT" | "TERASSE"3
+  */
 };
