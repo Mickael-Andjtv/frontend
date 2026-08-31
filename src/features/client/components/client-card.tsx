@@ -30,13 +30,13 @@ const ClientCardComponent = ({ customer, onSelect }: Props) => {
       <CardHeader className="p-4 border-b border-slate-100 space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <Avatar className="h-12 w-12 rounded-none border border-slate-200">
+            <Avatar className="h-12 w-12  border border-slate-200">
               <AvatarImage
                 src={customer.image}
                 alt={`${customer.firstName} ${customer.lastName}`}
                 className="object-cover"
               />
-              <AvatarFallback className="rounded-none bg-slate-900 text-white font-medium text-sm">
+              <AvatarFallback className=" bg-slate-900 text-white font-medium text-sm">
                 {initials}
               </AvatarFallback>
             </Avatar>
