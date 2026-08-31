@@ -1,3 +1,5 @@
+import { Customer } from "@/features/client/types/client.types";
+
 export type ReservationStatus =
   | "PENDING"
   | "CONFIRMED"
@@ -6,7 +8,7 @@ export type ReservationStatus =
 
 export interface Reservation {
   id: string;
-  userId: string;
+  customer:Customer
   tableId?: string | null;
   reservationDate: string;
   reservationTime: string;

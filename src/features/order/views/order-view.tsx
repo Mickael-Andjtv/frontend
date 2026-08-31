@@ -19,28 +19,28 @@ import { MOCK_ORDERS } from "../mocks/order.mocks";
 const OrderView = () => {
   const [activeTab, setActiveTab] = useState("active");
 
-  // Filtres pour l'historique
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState<string>("ALL"); // ALL, COMPLETED, CANCELLED
-  const [selectedType, setSelectedType] = useState<string>("ALL"); // ALL, EAT_IN, TAKEAWAY, DELIVERY
-  const [sortBy, setSortBy] = useState<"date-desc" | "date-asc" | "amount-desc">("date-desc");
+  const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
+  const [selectedType, setSelectedType] = useState<string>("ALL");
+  const [sortBy, setSortBy] = useState<
+    "date-desc" | "date-asc" | "amount-desc"
+  >("date-desc");
 
-  // 1. Commandes En cours
   const activeOrders = useMemo(() => {
     return MOCK_ORDERS.filter(
-      (ord) => ord.status !== "CANCELLED" && ord.status !== "COMPLETED"
+      (ord) => ord.status !== "CANCELLED" && ord.status !== "COMPLETED",
     );
   }, []);
 
-  // 2. Commandes Historique (filtrées et triées)
   const filteredHistoryOrders = useMemo(() => {
     return MOCK_ORDERS.filter((ord) => {
-      const isHistory = ord.status === "CANCELLED" || ord.status === "COMPLETED";
+      const isHistory =
+        ord.status === "CANCELLED" || ord.status === "COMPLETED";
       if (!isHistory) return false;
 
-      // Recherche textuelle
       const query = searchQuery.toLowerCase().trim();
-      const fullName = `${ord.customer?.firstName ?? ""} ${ord.customer?.lastName ?? ""}`.toLowerCase();
+      const fullName =
+        `${ord.customer?.firstName ?? ""} ${ord.customer?.lastName ?? ""}`.toLowerCase();
       const orderNum = (ord.orderNumber ?? "").toLowerCase();
       const phone = ord.customer?.phone ?? "";
 
@@ -50,13 +50,10 @@ const OrderView = () => {
         orderNum.includes(query) ||
         phone.includes(query);
 
-      // Filtre par statut
       const matchesStatus =
         selectedStatus === "ALL" || ord.status === selectedStatus;
 
-      // Filtre par type de commande
-      const matchesType =
-        selectedType === "ALL" || ord.type === selectedType;
+      const matchesType = selectedType === "ALL" || ord.type === selectedType;
 
       return matchesSearch && matchesStatus && matchesType;
     }).sort((a, b) => {
@@ -64,7 +61,9 @@ const OrderView = () => {
         return (b.totalAmount ?? 0) - (a.totalAmount ?? 0);
       }
       if (sortBy === "date-asc") {
-        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        return (
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
       }
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
@@ -85,22 +84,22 @@ const OrderView = () => {
 
   return (
     <div className="p-6 space-y-4">
+      <h1 className="text-xl font-bold">Commandes</h1>
+
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList variant="line">
-          <TabsTrigger value="active">
+          <TabsTrigger value="active" className={"cursor-pointer"}>
             En cours ({activeOrders.length})
           </TabsTrigger>
-          <TabsTrigger value="history">
+          <TabsTrigger value="history" className={"cursor-pointer"}>
             Historique ({filteredHistoryOrders.length})
           </TabsTrigger>
         </TabsList>
 
-        {/* Onglet : En cours */}
         <TabsContent value="active" className="pt-4">
           <ListOrderComponent orders={activeOrders} />
         </TabsContent>
 
-        {/* Onglet : Historique */}
         <TabsContent value="history" className="pt-4 space-y-6">
           <div className="flex flex-col gap-4 bg-white p-4 border border-slate-200 shadow-sm">
             <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
@@ -125,7 +124,9 @@ const OrderView = () => {
               <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
                 <Select
                   value={sortBy}
-                  onValueChange={(val: "date-desc" | "date-asc" | "amount-desc" | null) => {
+                  onValueChange={(
+                    val: "date-desc" | "date-asc" | "amount-desc" | null,
+                  ) => {
                     if (val) setSortBy(val);
                   }}
                 >
@@ -158,7 +159,6 @@ const OrderView = () => {
               </div>
             </div>
 
-            {/* Badges de filtrage */}
             <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
               <span className="text-xs font-medium text-slate-500 flex items-center gap-1 mr-1">
                 <SlidersHorizontal className="w-3 h-3" /> Type :
@@ -174,21 +174,31 @@ const OrderView = () => {
               <Badge
                 variant={selectedType === "EAT_IN" ? "default" : "outline"}
                 className="cursor-pointer"
-                onClick={() => setSelectedType(selectedType === "EAT_IN" ? "ALL" : "EAT_IN")}
+                onClick={() =>
+                  setSelectedType(selectedType === "EAT_IN" ? "ALL" : "EAT_IN")
+                }
               >
                 Sur place
               </Badge>
               <Badge
                 variant={selectedType === "TAKEAWAY" ? "default" : "outline"}
                 className="cursor-pointer"
-                onClick={() => setSelectedType(selectedType === "TAKEAWAY" ? "ALL" : "TAKEAWAY")}
+                onClick={() =>
+                  setSelectedType(
+                    selectedType === "TAKEAWAY" ? "ALL" : "TAKEAWAY",
+                  )
+                }
               >
                 À emporter
               </Badge>
               <Badge
                 variant={selectedType === "DELIVERY" ? "default" : "outline"}
                 className="cursor-pointer"
-                onClick={() => setSelectedType(selectedType === "DELIVERY" ? "ALL" : "DELIVERY")}
+                onClick={() =>
+                  setSelectedType(
+                    selectedType === "DELIVERY" ? "ALL" : "DELIVERY",
+                  )
+                }
               >
                 Livraison
               </Badge>
@@ -213,7 +223,11 @@ const OrderView = () => {
                     ? "bg-emerald-600 hover:bg-emerald-700 text-white"
                     : ""
                 }`}
-                onClick={() => setSelectedStatus(selectedStatus === "COMPLETED" ? "ALL" : "COMPLETED")}
+                onClick={() =>
+                  setSelectedStatus(
+                    selectedStatus === "COMPLETED" ? "ALL" : "COMPLETED",
+                  )
+                }
               >
                 Terminées
               </Badge>
@@ -224,7 +238,11 @@ const OrderView = () => {
                     ? "bg-rose-600 hover:bg-rose-700 text-white"
                     : ""
                 }`}
-                onClick={() => setSelectedStatus(selectedStatus === "CANCELLED" ? "ALL" : "CANCELLED")}
+                onClick={() =>
+                  setSelectedStatus(
+                    selectedStatus === "CANCELLED" ? "ALL" : "CANCELLED",
+                  )
+                }
               >
                 Annulées
               </Badge>
@@ -236,7 +254,7 @@ const OrderView = () => {
           ) : (
             <div className="text-center py-12 border border-dashed border-slate-200 rounded-none">
               <p className="text-slate-500 text-sm">
-                Aucune commande ne correspond à vos critères d'historique.
+                Aucune commande ne correspond à vos critères d&apos;historique.
               </p>
               <Button
                 variant="link"

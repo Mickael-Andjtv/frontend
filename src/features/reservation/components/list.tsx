@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+"use client";
+
+import React, { useState, useMemo } from "react";
 import { DndContext, DragEndEvent, useDroppable } from "@dnd-kit/core";
 import { Reservation } from "../types/reservation.type";
 import { RestaurantTable } from "@/features/restaurant-table/types/table";
@@ -13,20 +15,16 @@ import {
 import { ReservationCard, ReservationEmptyCard } from "./reservation-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import {
   ChevronLeft,
   ChevronRight,
   Users,
   MapPin,
   Calendar as CalendarIcon,
-  Filter,
+  Search,
+  SlidersHorizontal,
+  X,
 } from "lucide-react";
 import { ConfirmMoveModal } from "@/components/layout/confirm-move";
 
@@ -36,7 +34,7 @@ type Props = {
   onUpdateReservation?: (
     reservationId: string,
     newTableId: string,
-    newTime: string
+    newTime: string,
   ) => void;
 };
 
@@ -84,10 +82,11 @@ const ListReservation = ({
   const [reservations, setReservations] =
     useState<Reservation[]>(initialReservations);
   const [start, setStart] = useState(0);
+
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedDate, setSelectedDate] = useState("2026-08-30");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
 
-  // State pour la modale de confirmation
   const [pendingMove, setPendingMove] = useState<{
     reservationId: string;
     targetTableId: string;
@@ -108,7 +107,7 @@ const ListReservation = ({
       (r) =>
         r.tableId === targetTableId &&
         r.reservationTime === targetTime &&
-        r.id !== reservationId
+        r.id !== reservationId,
     );
 
     if (isOccupied) {
@@ -118,7 +117,6 @@ const ListReservation = ({
 
     const targetTable = tabledata.find((t) => t.id === targetTableId);
 
-    // Ouvre la modale en stockant les infos du déplacement
     setPendingMove({
       reservationId,
       targetTableId,
@@ -136,8 +134,8 @@ const ListReservation = ({
       prev.map((r) =>
         r.id === reservationId
           ? { ...r, tableId: targetTableId, reservationTime: targetTime }
-          : r
-      )
+          : r,
+      ),
     );
 
     if (onUpdateReservation) {
@@ -147,12 +145,43 @@ const ListReservation = ({
     setPendingMove(null);
   };
 
-  const filteredReservations = reservations.filter((r) => {
-    const matchStatus =
-      statusFilter === "ALL" || r.status.toUpperCase() === statusFilter;
-    const matchDate = !selectedDate || r.reservationDate === selectedDate;
-    return matchStatus && matchDate;
-  });
+  const filteredReservations = useMemo(() => {
+    return reservations.filter((r) => {
+      const query = searchQuery.toLowerCase().trim();
+
+      const firstName = (r.customer?.firstName ?? "").toLowerCase();
+      const lastName = (r.customer?.lastName ?? "").toLowerCase();
+      const email = (r.customer?.email ?? "").toLowerCase();
+      const specialReq = (r.specialRequest ?? "").toLowerCase();
+      const resId = (r.id ?? "").toLowerCase();
+
+      const matchesSearch =
+        !query ||
+        firstName.includes(query) ||
+        lastName.includes(query) ||
+        email.includes(query) ||
+        specialReq.includes(query) ||
+        resId.includes(query);
+
+      const matchesDate = !selectedDate || r.reservationDate === selectedDate;
+
+      const matchesStatus =
+        statusFilter === "ALL" || r.status.toUpperCase() === statusFilter;
+
+      return matchesSearch && matchesDate && matchesStatus;
+    });
+  }, [reservations, searchQuery, selectedDate, statusFilter]);
+
+  const resetFilters = () => {
+    setSearchQuery("");
+    setStatusFilter("ALL");
+    setSelectedDate("2026-08-30");
+  };
+
+  const hasActiveFilters =
+    searchQuery !== "" ||
+    statusFilter !== "ALL" ||
+    selectedDate !== "2026-08-30";
 
   const visibleTable = tabledata.slice(start, start + itemsPerPage);
 
@@ -161,42 +190,117 @@ const ListReservation = ({
     setStart((prev) => Math.min(tabledata.length - itemsPerPage, prev + 1));
 
   return (
-    <DndContext onDragEnd={handleDragEnd}>
+    <DndContext id="reservation-dnd-context" onDragEnd={handleDragEnd}>
       <div className="w-full bg-white border border-slate-200 shadow-sm overflow-hidden flex flex-col gap-0">
-        <h1 className="font-bold text-xl pl-4 bg-slate-50">Réservations</h1>
-        <div className="p-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-4 bg-slate-50/50">
-          <div className="flex items-center gap-3">
-            <div className="relative flex items-center">
-              <CalendarIcon className="absolute left-3 h-4 w-4 text-slate-500 pointer-events-none" />
+        <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+          <h1 className="font-bold text-xl text-slate-900">Réservations</h1>
+          <span className="text-xs text-slate-500 font-medium">
+            {tabledata.length} tables au total
+          </span>
+        </div>
+
+        <div className="p-4 border-b border-slate-200 flex flex-col gap-4 bg-white">
+          <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
+            <div className="relative w-full md:w-80">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="pl-9 h-9 w-40 bg-white text-xs border-slate-200 font-medium"
+                placeholder="Rechercher par client, note..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 pr-8 h-9 text-xs"
               />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </div>
 
-            <Select
-              value={statusFilter}
-              onValueChange={(val) => setStatusFilter(val ?? "ALL")}
-            >
-              <SelectTrigger className="h-9 w-40 bg-white text-xs rounded-none border-slate-200 font-medium">
-                <div className="flex items-center gap-2">
-                  <Filter className="h-3.5 w-3.5 text-slate-500" />
-                  <SelectValue placeholder="Tous les statuts" />
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">Tous les statuts</SelectItem>
-                <SelectItem value="CONFIRMED">Confirmé</SelectItem>
-                <SelectItem value="PENDING">En attente</SelectItem>
-                <SelectItem value="CANCELLED">Annulé</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+              <div className="relative flex items-center">
+                <CalendarIcon className="absolute left-3 h-4 w-4 text-slate-500 pointer-events-none" />
+                <Input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="pl-9 h-9 w-40 bg-white text-xs border-slate-200 font-medium rounded-none"
+                />
+              </div>
+
+              {hasActiveFilters && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={resetFilters}
+                  className="text-xs text-slate-500 rounded-none hover:text-slate-900 h-9"
+                >
+                  Réinitialiser
+                </Button>
+              )}
+            </div>
           </div>
 
-          <div className="text-xs text-slate-500 font-medium">
-            {tabledata.length} tables au total
+          <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
+            <span className="text-xs font-medium text-slate-500 flex items-center gap-1 mr-1">
+              <SlidersHorizontal className="w-3 h-3" /> Statut :
+            </span>
+
+            <Badge
+              variant={statusFilter === "ALL" ? "default" : "outline"}
+              className="cursor-pointer"
+              onClick={() => setStatusFilter("ALL")}
+            >
+              Tous
+            </Badge>
+
+            <Badge
+              variant={statusFilter === "CONFIRMED" ? "default" : "outline"}
+              className={`cursor-pointer ${
+                statusFilter === "CONFIRMED"
+                  ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                  : ""
+              }`}
+              onClick={() =>
+                setStatusFilter(
+                  statusFilter === "CONFIRMED" ? "ALL" : "CONFIRMED",
+                )
+              }
+            >
+              Confirmés
+            </Badge>
+
+            <Badge
+              variant={statusFilter === "PENDING" ? "default" : "outline"}
+              className={`cursor-pointer ${
+                statusFilter === "PENDING"
+                  ? "bg-amber-600 hover:bg-amber-700 text-white"
+                  : ""
+              }`}
+              onClick={() =>
+                setStatusFilter(statusFilter === "PENDING" ? "ALL" : "PENDING")
+              }
+            >
+              En attente
+            </Badge>
+
+            <Badge
+              variant={statusFilter === "CANCELLED" ? "default" : "outline"}
+              className={`cursor-pointer ${
+                statusFilter === "CANCELLED"
+                  ? "bg-rose-600 hover:bg-rose-700 text-white"
+                  : ""
+              }`}
+              onClick={() =>
+                setStatusFilter(
+                  statusFilter === "CANCELLED" ? "ALL" : "CANCELLED",
+                )
+              }
+            >
+              Annulés
+            </Badge>
           </div>
         </div>
 
@@ -263,7 +367,7 @@ const ListReservation = ({
 
                 {visibleTable.map((t) => {
                   const filter = filteredReservations.find(
-                    (r) => r.tableId === t.id && r.reservationTime === ck
+                    (r) => r.tableId === t.id && r.reservationTime === ck,
                   );
                   const dropId = `${t.id}|${ck}`;
 
@@ -271,6 +375,7 @@ const ListReservation = ({
                     <DroppableCell key={dropId} id={dropId}>
                       {filter ? (
                         <ReservationCard
+                          customer={filter.customer}
                           id={filter.id}
                           dateEnd={filter.reservationTime}
                           status={filter.status}

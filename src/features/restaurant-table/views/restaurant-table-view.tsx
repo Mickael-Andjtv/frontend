@@ -4,10 +4,12 @@ import AddTable from "./add-table";
 
 const RestaurantTableView = () => {
   return (
-    <div className="px-4">
-      <h1 className="text-xl font-bold">Tables</h1>
+    <div className="p-4">
+      <div className="flex justify-between items-center m-2">
+        <h1 className="text-xl font-bold">Tables</h1>
 
       <AddTable />
+      </div>
       <ListTable restaurantTables={MOCK_TABLES} />
     </div>
   );
