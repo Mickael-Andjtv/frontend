@@ -5,9 +5,15 @@ import { Button } from "@/components/ui/button";
 const AddTable = () => {
   return (
     <div className="flex justify-between items-center">
-      <div className=" flex flex-col mb-2">
-      </div>
+      <div className=" flex flex-col mb-2"></div>
       <AddTableComponet
+        isAdd
+        tableData={{
+          id: "",
+          num: 0,
+          capacity: 0,
+          place: "",
+        }}
         addBtn={
           <Button
             className={

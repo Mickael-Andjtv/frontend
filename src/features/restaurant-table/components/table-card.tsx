@@ -1,6 +1,6 @@
 "use client";
 
-import { Users, Trash2, MapPin } from "lucide-react";
+import { Users, Trash2, MapPin, Edit } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -11,13 +11,13 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RestaurantTable } from "../types/table";
+import { AddTableComponet } from "./add";
 
 type Props = {
   resTable: RestaurantTable;
-  onDelete?: (id: string) => void;
 };
 
-const TableCard = ({ resTable, onDelete }: Props) => {
+const TableCard = ({ resTable }: Props) => {
   return (
     <Card className="w-full rounded-none border border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 pt-4 px-4 border-b border-slate-100 bg-slate-50/50">
@@ -45,20 +45,25 @@ const TableCard = ({ resTable, onDelete }: Props) => {
 
         <div className="flex items-center gap-2 text-xs text-slate-500">
           <MapPin className="h-4 w-4 text-slate-400" />
-          <span>Salle principale</span>
+          <span>{resTable.place ?? "Salle principale"}</span>
         </div>
       </CardContent>
 
       <CardFooter className="flex justify-end p-3 pt-0 bg-white">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="rounded-none text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 h-8 px-2 gap-1.5"
-          onClick={() => onDelete && onDelete(resTable.id)}
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-          Supprimer
-        </Button>
+        <AddTableComponet
+          addBtn={
+            <Button
+              variant="ghost"
+              size="sm"
+              className={"rounded-none"}
+            >
+              <Edit className="h-3.5 w-3.5" />
+              Modifier
+            </Button>
+          }
+          tableData={resTable}
+          isAdd={false}
+        />
       </CardFooter>
     </Card>
   );
