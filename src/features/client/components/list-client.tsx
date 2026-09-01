@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Customer } from "../types/client.types";
 import ClientCardComponent from "./client-card";
+import { CustomerDetailsSheet } from "./client-detail";
 
 type Props = {
   clients: Customer[];
@@ -106,6 +107,7 @@ const ListClientComponent = ({ clients, onSelectCustomer }: Props) => {
     isVegetarianOnly ||
     isGlutenFreeOnly ||
     hasAllergiesOnly;
+
 
   return (
     <div className="space-y-6">
@@ -230,7 +232,7 @@ const ListClientComponent = ({ clients, onSelectCustomer }: Props) => {
             }`}
             onClick={() => setIsVegetarianOnly(!isVegetarianOnly)}
           >
-             Végétarien
+            Végétarien
           </Badge>
 
           <Badge
@@ -238,7 +240,7 @@ const ListClientComponent = ({ clients, onSelectCustomer }: Props) => {
             className="cursor-pointer"
             onClick={() => setIsGlutenFreeOnly(!isGlutenFreeOnly)}
           >
-             Sans Gluten
+            Sans Gluten
           </Badge>
 
           <Badge
@@ -250,7 +252,7 @@ const ListClientComponent = ({ clients, onSelectCustomer }: Props) => {
             }`}
             onClick={() => setHasAllergiesOnly(!hasAllergiesOnly)}
           >
-             Avec Allergie(s)
+            Avec Allergie(s)
           </Badge>
         </div>
       </div>
@@ -258,7 +260,11 @@ const ListClientComponent = ({ clients, onSelectCustomer }: Props) => {
       {filteredClients.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {filteredClients.map((client) => (
-            <ClientCardComponent key={client.id} customer={client} />
+            <CustomerDetailsSheet
+              key={client.id}
+              customer={client}
+              detail={<ClientCardComponent customer={client} />}
+            />
           ))}
         </div>
       ) : (

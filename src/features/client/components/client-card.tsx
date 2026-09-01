@@ -8,7 +8,6 @@ import { Mail, Phone, Calendar, ShoppingBag, ShieldAlert } from "lucide-react";
 
 type Props = {
   customer: Customer;
-  onSelect?: (customer: Customer) => void;
 };
 
 const TIER_BADGES: Record<string, string> = {
@@ -18,15 +17,12 @@ const TIER_BADGES: Record<string, string> = {
   VIP: "bg-purple-600 text-white hover:bg-purple-600",
 };
 
-const ClientCardComponent = ({ customer, onSelect }: Props) => {
+const ClientCardComponent = ({ customer }: Props) => {
   const initials =
     `${customer.firstName?.[0] || ""}${customer.lastName?.[0] || ""}`.toUpperCase();
 
   return (
-    <Card
-      onClick={() => onSelect?.(customer)}
-      className="rounded-none border border-slate-200 bg-white hover:border-slate-400 transition-all cursor-pointer shadow-sm"
-    >
+    <Card className="h-full rounded-none border border-slate-200 bg-white hover:border-slate-400 hover:shadow-md transition-all cursor-pointer shadow-sm">
       <CardHeader className="p-4 border-b border-slate-100 space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
