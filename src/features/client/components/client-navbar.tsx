@@ -47,21 +47,21 @@ export function ClientNavbar() {
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
+      <div className="mx-auto flex h-[4.5rem] max-w-7xl items-center justify-between gap-6 px-5 sm:px-8">
         <ButtonLink
           href="/"
           variant="ghost"
-          className="px-0 hover:bg-transparent items-center gap-2"
+          className="px-0 hover:bg-transparent items-center gap-3"
         >
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground">
-            <UtensilsCrossed className="h-4 w-4" />
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
+            <UtensilsCrossed className="h-5 w-5" />
           </span>
           <span className="text-lg font-bold tracking-tight">
             La Table d&apos;Or
           </span>
         </ButtonLink>
 
-        <nav className="hidden items-center gap-1 md:flex">
+        <nav className="hidden items-center gap-3 md:flex">
           {NAV_LINKS.map((link) => {
             const active =
               link.href === "/client"
@@ -72,7 +72,7 @@ export function ClientNavbar() {
                 key={link.href}
                 href={link.href}
                 variant="ghost"
-                className={cn("gap-2", active && "bg-muted")}
+                className={cn("gap-2 px-4 py-2.5", active && "bg-muted")}
               >
                 <link.icon className="h-4 w-4" />
                 {link.label}
@@ -81,7 +81,7 @@ export function ClientNavbar() {
           })}
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <Button
             variant="outline"
             size="icon"
@@ -100,9 +100,9 @@ export function ClientNavbar() {
           <ButtonLink
             href="/client/profile"
             variant="ghost"
-            className="hidden items-center gap-2 md:flex"
+            className="hidden items-center gap-2.5 px-4 py-2.5 md:flex"
           >
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
               {initials}
             </span>
             <span className="max-w-[140px] truncate text-sm">
@@ -112,7 +112,7 @@ export function ClientNavbar() {
 
           <Button
             variant="ghost"
-            className="hidden gap-2 md:flex"
+            className="hidden gap-2 px-4 md:flex"
             onClick={handleLogout}
           >
             <LogOut className="h-4 w-4" />
@@ -131,8 +131,8 @@ export function ClientNavbar() {
       </div>
 
       {mobileOpen && (
-        <nav className="border-t bg-background px-4 py-3 md:hidden">
-          <div className="flex flex-col gap-1">
+        <nav className="border-t bg-background px-5 py-4 md:hidden">
+          <div className="flex flex-col gap-2">
             {NAV_LINKS.map((link) => (
               <ButtonLink
                 key={link.href}

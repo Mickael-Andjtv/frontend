@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { ConfirmMoveModal } from "@/components/layout/confirm-move";
 import { toApiTime } from "@/services/reservations";
+import { RESERVATION_TIME_SLOTS } from "@/features/reservation/constants/creneaux";
 
 type Props = {
   reservationData: Reservation[];
@@ -44,20 +45,7 @@ type Props = {
   ) => void;
 };
 
-const CRENAUX = [
-  "9:00 AM",
-  "10:00 AM",
-  "11:00 AM",
-  "12:00 PM",
-  "1:00 PM",
-  "2:00 PM",
-  "3:00 PM",
-  "4:00 PM",
-  "5:00 PM",
-  "6:00 PM",
-  "7:00 PM",
-  "8:00 PM",
-];
+const CRENAUX = RESERVATION_TIME_SLOTS;
 
 const todayISO = new Date().toISOString().slice(0, 10);
 

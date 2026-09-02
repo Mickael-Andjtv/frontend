@@ -8,6 +8,7 @@ import { useAuth } from "@/features/auth/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 
@@ -33,6 +34,10 @@ function RegisterContent() {
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isVegetarian, setIsVegetarian] = useState(false);
+  const [isGlutenFree, setIsGlutenFree] = useState(false);
+  const [allergies, setAllergies] = useState("");
+  const [preferredTableNotes, setPreferredTableNotes] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +56,21 @@ function RegisterContent() {
     setLoading(true);
     setError(null);
     try {
-      await register({ firstName, lastName, email, phone: phone || undefined, password });
+      await register({
+        firstName,
+        lastName,
+        email,
+        phone: phone || undefined,
+        password,
+        preferences: {
+          isVegetarian,
+          isGlutenFree,
+          allergies: allergies
+            ? allergies.split(",").map((a) => a.trim()).filter(Boolean)
+            : [],
+          preferredTableNotes: preferredTableNotes.trim() || undefined,
+        },
+      });
       toast.success("Compte créé. Bienvenue !");
       router.push(next);
       router.refresh();
@@ -144,6 +163,39 @@ function RegisterContent() {
                   onChange={(e) => setConfirm(e.target.value)}
                 />
               </div>
+
+              <div className="rounded-lg border p-4">
+                <p className="mb-3 text-sm font-medium">Préférences alimentaires (optionnel)</p>
+                <div className="space-y-3">
+                  <label className="flex items-center justify-between gap-3">
+                    <span className="text-sm text-muted-foreground">Végétarien(ne)</span>
+                    <Switch checked={isVegetarian} onCheckedChange={setIsVegetarian} />
+                  </label>
+                  <label className="flex items-center justify-between gap-3">
+                    <span className="text-sm text-muted-foreground">Sans gluten</span>
+                    <Switch checked={isGlutenFree} onCheckedChange={setIsGlutenFree} />
+                  </label>
+                  <div className="space-y-2">
+                    <Label htmlFor="allergies">Allergies (séparées par des virgules)</Label>
+                    <Input
+                      id="allergies"
+                      value={allergies}
+                      onChange={(e) => setAllergies(e.target.value)}
+                      placeholder="ex. arachides, lactose"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="table-notes">Note pour votre table</Label>
+                    <Input
+                      id="table-notes"
+                      value={preferredTableNotes}
+                      onChange={(e) => setPreferredTableNotes(e.target.value)}
+                      placeholder="ex. près de la fenêtre"
+                    />
+                  </div>
+                </div>
+              </div>
+
               <Button className="w-full" type="submit" disabled={loading}>
                 {loading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />

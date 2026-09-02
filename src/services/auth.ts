@@ -12,6 +12,12 @@ export type RegisterPayload = {
   email: string;
   phone?: string;
   password: string;
+  preferences?: {
+    isVegetarian?: boolean;
+    isGlutenFree?: boolean;
+    allergies?: string[];
+    preferredTableNotes?: string;
+  };
 };
 
 export async function registerClient(

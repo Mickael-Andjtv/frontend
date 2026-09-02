@@ -25,21 +25,10 @@ import {
 import type { RestaurantTable } from "@/features/restaurant-table/types/table";
 import type { Customer } from "@/features/client/types/client.types";
 import type { CreateReservationPayload } from "@/services/reservations";
+import { toApiTime } from "@/services/reservations";
+import { RESERVATION_TIME_SLOTS } from "@/features/reservation/constants/creneaux";
 
-const TIME_SLOTS = [
-  "9:00 AM",
-  "10:00 AM",
-  "11:00 AM",
-  "12:00 PM",
-  "1:00 PM",
-  "2:00 PM",
-  "3:00 PM",
-  "4:00 PM",
-  "5:00 PM",
-  "6:00 PM",
-  "7:00 PM",
-  "8:00 PM",
-];
+const TIME_SLOTS = RESERVATION_TIME_SLOTS;
 
 type Props = {
   triggerBtn?: React.ReactElement;
@@ -59,7 +48,7 @@ export function ReservationFormSheet({
   const [reservationDate, setReservationDate] = useState(
     new Date().toISOString().slice(0, 10),
   );
-  const [reservationTime, setReservationTime] = useState("12:00 PM");
+    const [reservationTime, setReservationTime] = useState("12:00 PM");
   const [tableId, setTableId] = useState("");
   const [numberOfGuests, setNumberOfGuests] = useState("2");
   const [specialRequest, setSpecialRequest] = useState("");
@@ -80,7 +69,7 @@ export function ReservationFormSheet({
     onSubmit?.({
       customerId,
       reservationDate,
-      reservationTime,
+      reservationTime: toApiTime(reservationTime),
       numberOfGuests: parseInt(numberOfGuests, 10) || 2,
       tableId: tableId || null,
       specialRequest: specialRequest.trim() || null,

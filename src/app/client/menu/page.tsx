@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ShoppingBag,
   Plus,
@@ -18,11 +18,12 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 const currency = (value: number) => `${value.toLocaleString("fr-FR")} Ar`;
 
 export default function ClientMenuPage() {
-  const { addItem, openCart } = useCart();
+  const { addItem } = useCart();
   const [items, setItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -32,23 +33,25 @@ export default function ClientMenuPage() {
     [],
   );
 
-  useEffect(() => {
-    let active = true;
+  const loadMenu = useCallback(() => {
     Promise.all([getMenuItems(), getCategories()])
       .then(([menuItems, categories]) => {
-        if (!active) return;
         const available = menuItems.filter(
           (item) => item.status === "AVAILABLE",
         );
         setItems(available);
         setCategories(categories.map((c) => ({ id: c.id, name: c.name })));
+        setLoading(false);
       })
-      .catch(() => active && setError(true))
-      .finally(() => active && setLoading(false));
-    return () => {
-      active = false;
-    };
+      .catch(() => {
+        setError(true);
+        setLoading(false);
+      });
   }, []);
+
+  useEffect(() => {
+    loadMenu();
+  }, [loadMenu]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -81,7 +84,14 @@ export default function ClientMenuPage() {
       <div className="flex flex-col items-center gap-4 rounded-lg border border-dashed p-10 text-center">
         <CircleAlert className="h-10 w-10 text-muted-foreground" />
         <p>Une erreur est survenue lors du chargement du menu.</p>
-        <Button variant="outline" onClick={() => window.location.reload()}>
+        <Button
+          variant="outline"
+          onClick={() => {
+            setError(false);
+            setLoading(true);
+            loadMenu();
+          }}
+        >
           Réessayer
         </Button>
       </div>
@@ -194,7 +204,7 @@ export default function ClientMenuPage() {
                   className="mt-4 w-full"
                   onClick={() => {
                     addItem(item);
-                    openCart();
+                    toast.success(`${item.name} ajouté au panier`);
                   }}
                 >
                   <Plus className="h-4 w-4" /> Ajouter au panier

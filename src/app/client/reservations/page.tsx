@@ -26,22 +26,19 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { toApiTime } from "@/services/reservations";
+import { getTables } from "@/services/tables";
+import type { RestaurantTable } from "@/features/restaurant-table/types/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { RESERVATION_TIME_SLOTS } from "@/features/reservation/constants/creneaux";
 
-const TIME_SLOTS = [
-  "12:00",
-  "12:30",
-  "13:00",
-  "13:30",
-  "14:00",
-  "14:30",
-  "18:00",
-  "18:30",
-  "19:00",
-  "19:30",
-  "20:00",
-  "20:30",
-  "21:00",
-];
+const TIME_SLOTS = RESERVATION_TIME_SLOTS;
 
 const STATUS_LABELS: Record<string, string> = {
   PENDING: "En attente",
@@ -81,10 +78,12 @@ export default function ClientReservationsPage() {
   const [showForm, setShowForm] = useState(false);
 
   const [date, setDate] = useState(currentIsoDate());
-  const [time, setTime] = useState("19:00");
+  const [time, setTime] = useState("7:00 PM");
   const [guests, setGuests] = useState(2);
   const [request, setRequest] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [tables, setTables] = useState<RestaurantTable[]>([]);
+  const [tableId, setTableId] = useState("");
 
   const seenStatuses = useRef<Map<string, string>>(new Map());
 
@@ -148,6 +147,20 @@ export default function ClientReservationsPage() {
   }, [customer]);
   void fetchReservations;
 
+  useEffect(() => {
+    let active = true;
+    getTables()
+      .then((t) => active && setTables(t))
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const availableTables = tables
+    .filter((t) => t.status === "AVAILABLE" && t.capacity >= guests)
+    .sort((a, b) => a.num - b.num);
+
   const handleCreate = async () => {
     if (!customer) return;
     if (!date || !time || guests < 1) {
@@ -156,17 +169,21 @@ export default function ClientReservationsPage() {
     }
     setSubmitting(true);
     try {
+      const assignedTableId =
+        tableId || availableTables[0]?.id || null;
       await createClientReservation({
         customerId: customer.id,
         reservationDate: date,
-        reservationTime: `${time}:00`,
+        reservationTime: toApiTime(time),
         numberOfGuests: guests,
+        tableId: assignedTableId,
         specialRequest: request || undefined,
       });
       seenStatuses.current.clear();
       toast.success("Réservation créée avec succès !");
       setShowForm(false);
       setRequest("");
+      setTableId("");
       await getClientReservations(customer.id).then((next) =>
         next.forEach((res) => seenStatuses.current.set(res.id, res.status)),
       );
@@ -251,6 +268,27 @@ export default function ClientReservationsPage() {
                 value={guests}
                 onChange={(e) => setGuests(Number(e.target.value))}
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="r-table">Table (optionnelle)</Label>
+              <Select value={tableId} onValueChange={(v) => v !== null && setTableId(v)}>
+                <SelectTrigger id="r-table" className="w-full">
+                  <SelectValue placeholder="À attribuer par le restaurant" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableTables.length === 0 ? (
+                    <div className="px-3 py-2 text-sm text-muted-foreground">
+                      Aucune table disponible pour ce nombre de personnes
+                    </div>
+                  ) : (
+                    availableTables.map((table) => (
+                      <SelectItem key={table.id} value={table.id}>
+                        Table {table.num} · {table.capacity} pers.
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2 sm:col-span-2">
               <Label htmlFor="r-request">Demande particulière (optionnel)</Label>
