@@ -31,6 +31,8 @@ export const MenuCardAdmin = ({
   const isAvailable = menuItem.status === "AVAILABLE";
   const optionGroupsCount = menuItem.optionGroups?.length ?? 0;
   const [showDelete, setShowDelete] = useState(false);
+  const [showToggle, setShowToggle] = useState(false);
+  const [pendingToggle, setPendingToggle] = useState<boolean | null>(null);
 
   const badges = (
     <>
@@ -61,7 +63,10 @@ export const MenuCardAdmin = ({
       <div className="flex items-center gap-2">
         <Switch
           checked={isAvailable}
-          onCheckedChange={(checked) => onToggleStatus?.(menuItem.id, checked)}
+          onCheckedChange={(checked) => {
+            setPendingToggle(checked);
+            setShowToggle(true);
+          }}
         />
         <span className="text-[11px] font-medium text-slate-600">
           {isAvailable ? "En stock" : "Épuisé"}
@@ -113,6 +118,28 @@ export const MenuCardAdmin = ({
         destructive
         onConfirm={() => onDelete?.(menuItem.id)}
         onOpenChange={setShowDelete}
+      />
+
+      <ConfirmModal
+        open={showToggle}
+        title={pendingToggle ? "Rendre disponible" : "Marquer en rupture"}
+        description={
+          pendingToggle
+            ? `Rendre le plat « ${menuItem.name} » disponible ?`
+            : `Marquer le plat « ${menuItem.name} » comme épuisé ?`
+        }
+        confirmLabel={pendingToggle ? "Rendre disponible" : "Marquer en rupture"}
+        onConfirm={() => {
+          if (pendingToggle !== null) onToggleStatus?.(menuItem.id, pendingToggle);
+          setShowToggle(false);
+          setPendingToggle(null);
+        }}
+        onOpenChange={(openValue) => {
+          if (!openValue) {
+            setShowToggle(false);
+            setPendingToggle(null);
+          }
+        }}
       />
     </>
   );

@@ -6,16 +6,41 @@ import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Customer } from "@/features/client/types/client.types";
 import { Badge } from "@/components/ui/badge";
-import { Clock, ShieldAlert, MessageSquare, Check, X } from "lucide-react";
+import {
+  Clock,
+  ShieldAlert,
+  MessageSquare,
+  Check,
+  History,
+  ChevronRight,
+} from "lucide-react";
 import { ConfirmModal } from "@/components/layout/confirm-modal";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { ReservationStatus } from "../types/reservation.type";
 
 type Props = {
   id?: string;
   dateEnd: string;
+  dateLabel?: string;
   description?: string;
   status: string;
   customer: Customer;
+  isPast?: boolean;
   onStatusChange?: (id: string, status: ReservationStatus) => void;
 };
 
@@ -41,23 +66,41 @@ const STATUS_STYLING: Record<string, { border: string; badge: string }> = {
   },
 };
 
+const STATUS_LABELS: Record<string, string> = {
+  PENDING: "En attente",
+  CONFIRMED: "Confirmée",
+  CANCELLED: "Annulée",
+  COMPLETED: "Terminée",
+};
+
+const STATUS_OPTIONS: ReservationStatus[] = [
+  "PENDING",
+  "CONFIRMED",
+  "CANCELLED",
+  "COMPLETED",
+];
+
 export const ReservationCard = ({
   id,
   status,
   dateEnd,
+  dateLabel,
   description,
   customer,
+  isPast = false,
   onStatusChange,
 }: Props) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
       id: id || "",
-      disabled: !id,
+      disabled: isPast || !id,
     });
 
-  const [confirmAction, setConfirmAction] = useState<
-    "confirm" | "cancel" | null
-  >(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<ReservationStatus>(
+    () => (status.toUpperCase() as ReservationStatus) || "PENDING",
+  );
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const style = transform
     ? {
@@ -76,9 +119,17 @@ export const ReservationCard = ({
     badge: "bg-slate-500 text-white",
   };
 
-  const canConfirm = statusUpper === "PENDING";
-  const canCancel =
-    statusUpper !== "CANCELLED" && statusUpper !== "COMPLETED";
+  const currentStatus = (statusUpper as ReservationStatus) || "PENDING";
+
+  const openSheet = () => {
+    if (isPast || !id) return;
+    setSelectedStatus(currentStatus);
+    setSheetOpen(true);
+  };
+
+  const openConfirm = () => {
+    setShowConfirm(true);
+  };
 
   return (
     <>
@@ -90,7 +141,12 @@ export const ReservationCard = ({
         className={`h-full w-full ${isDragging ? "opacity-50" : ""}`}
       >
         <Card
-          className={`h-full w-full rounded-none border border-slate-200 border-l-4 ${currentStatusStyle.border} bg-white p-2.5 shadow-sm hover:border-slate-400 transition-all cursor-grab active:cursor-grabbing flex flex-col justify-between gap-1.5`}
+          onClick={openSheet}
+          className={`h-full w-full rounded-none border border-slate-200 border-l-4 ${currentStatusStyle.border} bg-white p-2.5 shadow-sm transition-all flex flex-col justify-between gap-1.5 ${
+            isPast
+              ? "opacity-60 grayscale cursor-not-allowed select-none"
+              : "cursor-pointer hover:border-slate-400"
+          }`}
         >
           {/* En-tête : Avatar & Infos Client */}
           <div className="flex items-center justify-between gap-2">
@@ -138,7 +194,7 @@ export const ReservationCard = ({
               <Badge
                 className={`rounded-none text-[9px] px-1.5 py-0 font-bold uppercase ${currentStatusStyle.badge}`}
               >
-                {status}
+                {STATUS_LABELS[statusUpper] || status}
               </Badge>
               <span className="text-[10px] text-slate-500 font-medium flex items-center gap-1">
                 <Clock className="w-2.5 h-2.5 text-slate-400" />
@@ -155,56 +211,100 @@ export const ReservationCard = ({
             </div>
           )}
 
-          {/* Actions */}
-          {(canConfirm || canCancel) && id && onStatusChange && (
+          {isPast ? (
             <div
-              className="flex items-center gap-1.5"
+              className="flex items-center justify-center gap-1.5"
               onPointerDown={(e) => e.stopPropagation()}
             >
-              {canConfirm && (
-                <button
-                  onClick={() => setConfirmAction("confirm")}
-                  className="h-6 flex-1 rounded-none border border-emerald-600 text-emerald-700 text-[10px] font-medium hover:bg-emerald-600 hover:text-white transition-colors flex items-center justify-center gap-1"
-                >
-                  <Check className="w-3 h-3" /> Confirmer
-                </button>
-              )}
-              {canCancel && (
-                <button
-                  onClick={() => setConfirmAction("cancel")}
-                  className="h-6 flex-1 rounded-none border border-rose-600/40 text-rose-600 text-[10px] font-medium hover:bg-rose-600 hover:text-white transition-colors flex items-center justify-center gap-1"
-                >
-                  <X className="w-3 h-3" /> Annuler
-                </button>
-              )}
+              <span className="h-6 flex-1 rounded-none border border-slate-200 bg-slate-50 text-slate-400 text-[10px] font-medium flex items-center justify-center gap-1">
+                <History className="w-3 h-3" /> Passée
+              </span>
+            </div>
+          ) : (
+            <div
+              className="flex items-center justify-end gap-1.5"
+              onPointerDown={(e) => e.stopPropagation()}
+            >
+              <span className="h-6 px-2 rounded-none border border-slate-200 bg-slate-50 text-slate-500 text-[10px] font-medium flex items-center gap-0.5">
+                <Check className="w-3 h-3" /> Changer le statut
+                <ChevronRight className="w-3 h-3" />
+              </span>
             </div>
           )}
         </Card>
       </div>
 
+      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+        <SheetContent className="w-full sm:max-w-md p-0 rounded-none">
+          <SheetHeader className="p-4 border-b shrink-0">
+            <SheetTitle className="text-lg font-bold">Réservation</SheetTitle>
+            <SheetDescription className="text-xs">
+              Modifier le statut de la réservation de {customer.firstName}{" "}
+              {customer.lastName}
+              {dateLabel ? ` • ${dateLabel}` : ""} à {dateEnd}.
+            </SheetDescription>
+          </SheetHeader>
+
+          <div className="flex-1 overflow-y-auto p-4 space-y-6">
+            <div className="grid gap-2">
+              <span className="text-xs font-semibold text-slate-700">
+                Statut
+              </span>
+              <Select
+                value={selectedStatus}
+                onValueChange={(val) =>
+                  val && setSelectedStatus(val as ReservationStatus)
+                }
+              >
+                <SelectTrigger className="rounded-none w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="rounded-none">
+                  {STATUS_OPTIONS.map((opt) => (
+                    <SelectItem key={opt} value={opt} className="rounded-none">
+                      {STATUS_LABELS[opt]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <SheetFooter className="p-4 border-t shrink-0 flex gap-2">
+            <Button
+              className="w-full"
+              disabled={selectedStatus === currentStatus}
+              onClick={openConfirm}
+            >
+              Enregistrer le statut
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => setSheetOpen(false)}
+            >
+              Annuler
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+
       <ConfirmModal
-        open={confirmAction !== null}
-        title={
-          confirmAction === "confirm"
-            ? "Confirmer la réservation"
-            : "Annuler la réservation"
+        open={showConfirm}
+        title="Changer le statut de la réservation"
+        description={`Confirmer le passage de la réservation de ${customer.firstName} ${customer.lastName} à « ${STATUS_LABELS[selectedStatus]} » ?`}
+        confirmLabel="Confirmer"
+        destructive={
+          selectedStatus === "CANCELLED" || selectedStatus === "COMPLETED"
         }
-        description={
-          confirmAction === "confirm"
-            ? `Confirmer la réservation de ${customer.firstName} ${customer.lastName} (${dateEnd}) ?`
-            : `Annuler définitivement la réservation de ${customer.firstName} ${customer.lastName} (${dateEnd}) ?`
-        }
-        confirmLabel={confirmAction === "confirm" ? "Confirmer" : "Annuler"}
-        destructive={confirmAction === "cancel"}
         onConfirm={() => {
-          if (!id || !confirmAction) return;
-          onStatusChange?.(
-            id,
-            confirmAction === "confirm" ? "CONFIRMED" : "CANCELLED",
-          );
+          if (!id) return;
+          onStatusChange?.(id, selectedStatus);
+          setShowConfirm(false);
+          setSheetOpen(false);
         }}
         onOpenChange={(openValue) => {
-          if (!openValue) setConfirmAction(null);
+          if (!openValue) setShowConfirm(false);
         }}
       />
     </>

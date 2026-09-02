@@ -114,7 +114,13 @@ export async function uploadImage(file: File): Promise<string> {
 }
 
 async function resolveImageUrl(payload: MenuItemPayload): Promise<string[]> {
-  const existing = [...(payload.existingUrls ?? []), ...(payload.imageUrl ?? [])];
+  // Use only the explicitly preserved existing URLs plus newly uploaded files.
+  // Do NOT merge payload.imageUrl, which can carry the full pre-edit list and
+  // cause duplication when editing (existingUrls already reflects kept images).
+  const existing = payload.existingUrls ?? [];
+  if (!existing.length && payload.imageUrl?.length) {
+    existing.push(...payload.imageUrl);
+  }
   const uploaded = await Promise.all((payload.imageFiles ?? []).map(uploadImage));
   return [...existing.map(resolveApiUrl), ...uploaded];
 }

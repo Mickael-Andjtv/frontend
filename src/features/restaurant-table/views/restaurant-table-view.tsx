@@ -6,6 +6,10 @@ import ListTable from "../components/list";
 import AddTable from "./add-table";
 import { getTables, createTable, updateTable, deleteTable, updateTableStatus } from "@/services/tables";
 import type { RestaurantTable, TableStatus } from "../types/table";
+import { naturalCompare } from "@/lib/utils";
+
+const sortTables = (tables: RestaurantTable[]) =>
+  [...tables].sort((a, b) => naturalCompare(a.num, b.num));
 
 const RestaurantTableView = () => {
   const [tables, setTables] = useState<RestaurantTable[]>([]);
@@ -15,7 +19,7 @@ const RestaurantTableView = () => {
   const loadTables = async () => {
     try {
       const fetched = await getTables();
-      setTables(fetched);
+      setTables(sortTables(fetched));
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Impossible de charger les tables");
@@ -28,7 +32,7 @@ const RestaurantTableView = () => {
     const controller = new AbortController();
     getTables()
       .then((fetched) => {
-        setTables(fetched);
+        setTables(sortTables(fetched));
         setError(null);
       })
       .catch((err) =>

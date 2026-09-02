@@ -58,9 +58,14 @@ const OrderView = () => {
   }, []);
 
   const activeOrders = useMemo(() => {
-    return orders.filter(
-      (ord) => ord.status !== "CANCELLED" && ord.status !== "COMPLETED",
-    );
+    return orders
+      .filter(
+        (ord) => ord.status !== "CANCELLED" && ord.status !== "COMPLETED",
+      )
+      .sort(
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      );
   }, [orders]);
 
   const filteredHistoryOrders = useMemo(() => {

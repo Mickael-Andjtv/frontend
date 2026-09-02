@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/sheet";
 import { useState } from "react";
 import { RestaurantTable } from "../types/table";
+import { ConfirmModal } from "@/components/layout/confirm-modal";
 
 type Props = {
   addBtn: React.ReactElement;
@@ -23,7 +24,12 @@ type Props = {
 
 export function AddTableComponet({ addBtn, tableData, isAdd, onSubmit }: Props) {
   const [open, setOpen] = useState(false);
-  const [table, setTable] = useState<RestaurantTable>(tableData);
+  const [table, setTable] = useState<RestaurantTable>(() =>
+    tableData.num != null && tableData.capacity != null
+      ? tableData
+      : { ...tableData, num: 0, capacity: 0 },
+  );
+  const [showEditConfirm, setShowEditConfirm] = useState(false);
 
   const addTable = () => {
     onSubmit?.({ ...table, id: "" });
@@ -31,8 +37,7 @@ export function AddTableComponet({ addBtn, tableData, isAdd, onSubmit }: Props) 
   };
 
   const editTable = () => {
-    onSubmit?.(table);
-    setOpen(false);
+    setShowEditConfirm(true);
   };
 
   return (
@@ -52,10 +57,11 @@ export function AddTableComponet({ addBtn, tableData, isAdd, onSubmit }: Props) 
             <Input
               id="num"
               type="number"
-              value={table.num}
-              onChange={(e) =>
-                setTable({ ...table, num: parseInt(e.target.value) })
-              }
+              value={Number.isNaN(table.num) ? "" : (table.num ?? 0)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setTable({ ...table, num: value === "" ? 0 : Number(value) });
+              }}
             />
           </div>
           <div className="grid gap-3">
@@ -63,10 +69,14 @@ export function AddTableComponet({ addBtn, tableData, isAdd, onSubmit }: Props) 
             <Input
               id="cap"
               type="number"
-              value={table.capacity}
-              onChange={(e) =>
-                setTable({ ...table, capacity: parseInt(e.target.value) })
-              }
+              value={Number.isNaN(table.capacity) ? "" : (table.capacity ?? 0)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setTable({
+                  ...table,
+                  capacity: value === "" ? 0 : Number(value),
+                });
+              }}
             />
           </div>
           <div className="grid gap-3">
@@ -85,6 +95,19 @@ export function AddTableComponet({ addBtn, tableData, isAdd, onSubmit }: Props) 
           <SheetClose render={<Button variant="outline">Annuler</Button>} />
         </SheetFooter>
       </SheetContent>
+
+      <ConfirmModal
+        open={showEditConfirm}
+        title="Confirmer les modifications"
+        description={`Confirmer la mise à jour de la table ${table.num} (${table.capacity} couverts) ?`}
+        confirmLabel="Enregistrer"
+        onConfirm={() => {
+          onSubmit?.(table);
+          setShowEditConfirm(false);
+          setOpen(false);
+        }}
+        onOpenChange={setShowEditConfirm}
+      />
     </Sheet>
   );
 }

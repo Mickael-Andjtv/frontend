@@ -31,6 +31,15 @@ import type {
   RevenueByDate,
   ReservationsByDate,
 } from "@/services/dashboard";
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+} from "recharts";
 
 const STATUS_LABELS: Record<string, string> = {
   PENDING: "En attente",
@@ -49,6 +58,13 @@ const STATUS_COLORS: Record<string, string> = {
   COMPLETED: "bg-slate-500",
   CANCELLED: "bg-rose-500",
 };
+
+const formatEuro = (value: number) =>
+  new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency: "EUR",
+    maximumFractionDigits: 0,
+  }).format(value ?? 0);
 
 function StatCard({
   label,
@@ -77,28 +93,83 @@ function StatCard({
   );
 }
 
-function BarChart({
-  data,
-  color = "bg-slate-900",
-}: {
-  data: { label: string; value: number }[];
-  color?: string;
-}) {
-  const max = Math.max(...data.map((d) => d.value), 1);
+function RevenueChart({ data }: { data: RevenueByDate[] }) {
+  const sorted = [...data].sort((a, b) => a.date.localeCompare(b.date));
+
+  const chartData = sorted.map((entry) => {
+    const date = new Date(`${entry.date}T00:00:00`);
+    const label = date.toLocaleDateString("fr-FR", {
+      day: "2-digit",
+      month: "short",
+    });
+    return {
+      ...entry,
+      label,
+    };
+  });
+
+  const formatDay = (value: string) => {
+    const d = new Date(`${value}T00:00:00`);
+    return d.toLocaleDateString("fr-FR", {
+      weekday: "short",
+      day: "2-digit",
+      month: "short",
+    });
+  };
+
   return (
-    <div className="flex items-end gap-1 h-40">
-      {data.map((entry, index) => (
-        <div key={index} className="flex-1 flex flex-col items-center gap-1">
-          <span className="text-[10px] text-slate-500">{entry.value}</span>
-          <div
-            className={`w-full ${color} rounded-t-sm`}
-            style={{ height: `${Math.max((entry.value / max) * 100, 2)}%` }}
+    <div className="h-72 w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart
+          data={chartData}
+          margin={{ top: 10, right: 16, left: 0, bottom: 0 }}
+        >
+          <defs>
+            <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#0f172a" stopOpacity={0.35} />
+              <stop offset="95%" stopColor="#0f172a" stopOpacity={0.02} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+          <XAxis
+            dataKey="label"
+            tick={{ fontSize: 11, fill: "#64748b" }}
+            tickLine={false}
+            axisLine={false}
+            interval="preserveStartEnd"
+            minTickGap={24}
           />
-          <span className="text-[9px] text-slate-400 truncate w-full text-center">
-            {entry.label}
-          </span>
-        </div>
-      ))}
+          <YAxis
+            tick={{ fontSize: 11, fill: "#64748b" }}
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={(value: number) => `${Math.round(value)} €`}
+            width={56}
+          />
+          <Tooltip
+            formatter={(value) => [formatEuro(Number(value)), "Revenus"]}
+            labelFormatter={(label, payload) =>
+              payload?.[0]?.payload?.date
+                ? formatDay(payload[0].payload.date as string)
+                : String(label)
+            }
+            contentStyle={{
+              borderRadius: 0,
+              border: "1px solid #e2e8f0",
+              fontSize: 12,
+              boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+            }}
+            cursor={{ stroke: "#94a3b8", strokeDasharray: "4 4" }}
+          />
+          <Area
+            type="monotone"
+            dataKey="revenue"
+            stroke="#0f172a"
+            strokeWidth={2}
+            fill="url(#revenueGradient)"
+          />
+        </AreaChart>
+      </ResponsiveContainer>
     </div>
   );
 }
@@ -234,16 +305,16 @@ const DashboardView = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card className="rounded-none border-slate-200 lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-base">Revenus (14 derniers jours)</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-base">
+              Revenus (14 derniers jours)
+            </CardTitle>
+            <span className="text-xs text-slate-400">
+              Total : {formatEuro(revenue.reduce((s, e) => s + e.revenue, 0))}
+            </span>
           </CardHeader>
           <CardContent>
-            <BarChart
-              data={revenue.map((entry) => ({
-                label: entry.date.slice(5),
-                value: entry.revenue,
-              }))}
-            />
+            <RevenueChart data={revenue} />
           </CardContent>
         </Card>
 

@@ -26,6 +26,7 @@ import {
 
 import { Customer } from "../types/client.types";
 import { Mail, Phone, UserCheck, Award } from "lucide-react";
+import { ConfirmModal } from "@/components/layout/confirm-modal";
 
 type Props = {
   customer: Customer;
@@ -44,6 +45,7 @@ export const CustomerDetailsSheet = ({ customer, detail, onUpdate }: Props) => {
   const [data, setData] = useState<Customer>(customer);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const initials =
     `${data.firstName?.[0] || ""}${data.lastName?.[0] || ""}`.toUpperCase();
@@ -327,7 +329,7 @@ export const CustomerDetailsSheet = ({ customer, detail, onUpdate }: Props) => {
               />
 
               <Button
-                onClick={handleSave}
+                onClick={() => setShowConfirm(true)}
                 disabled={saving}
                 className="rounded-none text-xs h-9 bg-slate-900 text-white hover:bg-slate-800"
               >
@@ -337,6 +339,17 @@ export const CustomerDetailsSheet = ({ customer, detail, onUpdate }: Props) => {
           </SheetFooter>
         </SheetContent>
       </Sheet>
+
+      <ConfirmModal
+        open={showConfirm}
+        title="Confirmer les modifications"
+        description={`Confirmer la mise à jour du client « ${data.firstName} ${data.lastName} » ?`}
+        confirmLabel="Enregistrer"
+        onConfirm={handleSave}
+        onOpenChange={(openValue) => {
+          if (!openValue) setShowConfirm(false);
+        }}
+      />
     </>
   );
 };

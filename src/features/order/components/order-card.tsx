@@ -40,6 +40,12 @@ const OrderCardComponent = ({
   onStatusChange,
 }: Props) => {
   const [showReject, setShowReject] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState<{
+    title: string;
+    description: string;
+    confirmLabel: string;
+    status: Order["status"];
+  } | null>(null);
   const initials = `${order.customer.firstName?.[0] || ""}${
     order.customer.lastName?.[0] || ""
   }`.toUpperCase();
@@ -222,7 +228,14 @@ const OrderCardComponent = ({
               </Button>
               <Button
                 className="w-full bg-emerald-600 hover:bg-emerald-700 text-white gap-1"
-                onClick={() => onAccept?.(order.id)}
+                onClick={() =>
+                  setPendingStatus({
+                    title: "Accepter la commande",
+                    description: `Confirmer l'acceptation de la commande ${order.orderNumber} pour ${order.customer.firstName} ${order.customer.lastName} ?`,
+                    confirmLabel: "Accepter",
+                    status: "CONFIRMED",
+                  })
+                }
               >
                 <Check className="w-4 h-4" /> Accepter
               </Button>
@@ -232,7 +245,14 @@ const OrderCardComponent = ({
           {order.status === "CONFIRMED" && (
             <Button
               className="w-full bg-orange-600 hover:bg-orange-700 text-white gap-2"
-              onClick={() => onStatusChange?.(order.id, "PREPARING")}
+              onClick={() =>
+                setPendingStatus({
+                  title: "Envoyer en cuisine",
+                  description: `Confirmer l'envoi en cuisine de la commande ${order.orderNumber} ?`,
+                  confirmLabel: "Envoyer en cuisine",
+                  status: "PREPARING",
+                })
+              }
             >
               <ChefHat className="w-4 h-4" /> Envoyer en cuisine
             </Button>
@@ -241,7 +261,14 @@ const OrderCardComponent = ({
           {order.status === "PREPARING" && (
             <Button
               className="w-full bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
-              onClick={() => onStatusChange?.(order.id, "READY")}
+              onClick={() =>
+                setPendingStatus({
+                  title: "Marquer comme prête",
+                  description: `Confirmer que la commande ${order.orderNumber} est prête ?`,
+                  confirmLabel: "Marquer comme prête",
+                  status: "READY",
+                })
+              }
             >
               <CheckCircle2 className="w-4 h-4" /> Marquer comme Prête
             </Button>
@@ -250,7 +277,14 @@ const OrderCardComponent = ({
           {order.status === "READY" && (
             <Button
               className="w-full bg-slate-800 hover:bg-slate-900 text-white gap-2"
-              onClick={() => onStatusChange?.(order.id, "COMPLETED")}
+              onClick={() =>
+                setPendingStatus({
+                  title: "Clôturer la commande",
+                  description: `Confirmer la clôture de la commande ${order.orderNumber} pour ${order.customer.firstName} ${order.customer.lastName} (${order.totalAmount.toFixed(2)} €) ?`,
+                  confirmLabel: "Clôturer",
+                  status: "COMPLETED",
+                })
+              }
             >
               <Check className="w-4 h-4" /> Clôturer la commande
             </Button>
@@ -272,6 +306,23 @@ const OrderCardComponent = ({
         destructive
         onConfirm={() => onReject?.(order.id)}
         onOpenChange={setShowReject}
+      />
+
+      <ConfirmModal
+        open={pendingStatus !== null}
+        title={pendingStatus?.title ?? ""}
+        description={pendingStatus?.description ?? ""}
+        confirmLabel={pendingStatus?.confirmLabel ?? "Confirmer"}
+        onConfirm={() => {
+          const target = pendingStatus?.status;
+          if (!target) return;
+          if (target === "CONFIRMED") onAccept?.(order.id);
+          else onStatusChange?.(order.id, target);
+          setPendingStatus(null);
+        }}
+        onOpenChange={(openValue) => {
+          if (!openValue) setPendingStatus(null);
+        }}
       />
     </Card>
   );

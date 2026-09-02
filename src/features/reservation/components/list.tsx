@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { DndContext, DragEndEvent, useDroppable } from "@dnd-kit/core";
+import { DndContext, DragEndEvent, useDroppable, useSensor, useSensors, PointerSensor } from "@dnd-kit/core";
 import { toast } from "sonner";
 import { Reservation, ReservationStatus } from "../types/reservation.type";
 import { RestaurantTable } from "@/features/restaurant-table/types/table";
@@ -28,6 +28,7 @@ import {
   X,
 } from "lucide-react";
 import { ConfirmMoveModal } from "@/components/layout/confirm-move";
+import { toApiTime } from "@/services/reservations";
 
 type Props = {
   reservationData: Reservation[];
@@ -60,6 +61,22 @@ const CRENAUX = [
 
 const todayISO = new Date().toISOString().slice(0, 10);
 
+/**
+ * A reservation is considered "past" (read-only) once its full 60-minute slot
+ * has elapsed. While the slot is ongoing or in the future, it stays editable.
+ */
+function isReservationPast(reservation: Reservation): boolean {
+  const apiTime = toApiTime(reservation.reservationTime) || "00:00:00";
+  const [hours, minutes] = apiTime.split(":").map((p) => Number(p) || 0);
+  const slotStart = new Date(
+    `${reservation.reservationDate}T${String(hours).padStart(2, "0")}:${String(
+      minutes,
+    ).padStart(2, "0")}:00`,
+  );
+  const slotEnd = new Date(slotStart.getTime() + 60 * 60 * 1000);
+  return new Date().getTime() > slotEnd.getTime();
+}
+
 const DroppableCell = ({
   id,
   children,
@@ -82,14 +99,21 @@ const DroppableCell = ({
 };
 
 const ListReservation = ({
-  reservationData: initialReservations,
+  reservationData: reservations,
   tabledata,
   onUpdateReservation,
   onStatusChange,
 }: Props) => {
-  const [reservations, setReservations] =
-    useState<Reservation[]>(initialReservations);
   const [start, setStart] = useState(0);
+
+  // A drag only starts after the cursor moves at least MIN_DRAG_DISTANCE px.
+  // A plain pointer down / click without real movement is therefore handled as
+  // a regular click (opens the status Sheet) instead of a drag & drop.
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    }),
+  );
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDate, setSelectedDate] = useState(todayISO);
@@ -137,14 +161,6 @@ const ListReservation = ({
     if (!pendingMove) return;
 
     const { reservationId, targetTableId, targetTime } = pendingMove;
-
-    setReservations((prev) =>
-      prev.map((r) =>
-        r.id === reservationId
-          ? { ...r, tableId: targetTableId, reservationTime: targetTime }
-          : r,
-      ),
-    );
 
     if (onUpdateReservation) {
       onUpdateReservation(reservationId, targetTableId, targetTime);
@@ -198,7 +214,11 @@ const ListReservation = ({
     setStart((prev) => Math.min(tabledata.length - itemsPerPage, prev + 1));
 
   return (
-    <DndContext id="reservation-dnd-context" onDragEnd={handleDragEnd}>
+    <DndContext
+      id="reservation-dnd-context"
+      sensors={sensors}
+      onDragEnd={handleDragEnd}
+    >
       <div className="w-full bg-white border border-slate-200 shadow-sm overflow-hidden flex flex-col gap-0">
         <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
           <h1 className="font-bold text-xl text-slate-900">Réservations</h1>
@@ -386,8 +406,10 @@ const ListReservation = ({
                           customer={filter.customer}
                           id={filter.id}
                           dateEnd={filter.reservationTime}
+                          dateLabel={filter.reservationDate}
                           status={filter.status}
                           description={filter.specialRequest ?? ""}
+                          isPast={isReservationPast(filter)}
                           onStatusChange={onStatusChange}
                         />
                       ) : (

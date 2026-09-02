@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { RestaurantTable, TableStatus } from "../types/table";
 import TableCard from "./table-card";
+import { naturalCompare } from "@/lib/utils";
 
 type Props = {
   restaurantTables: RestaurantTable[];
@@ -20,18 +21,20 @@ const ListTable = ({ restaurantTables, onUpdateTable, onUpdateStatus, onDeleteTa
   const [capacityFilter, setCapacityFilter] = useState<number | "ALL">("ALL");
 
   const filteredTables = useMemo(() => {
-    return restaurantTables.filter((table) => {
-      const query = searchQuery.toLowerCase().trim();
-      const searchNum = parseInt(query, 10);
+    return restaurantTables
+      .filter((table) => {
+        const query = searchQuery.toLowerCase().trim();
+        const searchNum = parseInt(query, 10);
 
-      const matchesSearch =
-        !query || (!isNaN(searchNum) && table.num === searchNum);
+        const matchesSearch =
+          !query || (!isNaN(searchNum) && table.num === searchNum);
 
-      const matchesCapacity =
-        capacityFilter === "ALL" || table.capacity === capacityFilter;
+        const matchesCapacity =
+          capacityFilter === "ALL" || table.capacity === capacityFilter;
 
-      return matchesSearch && matchesCapacity;
-    });
+        return matchesSearch && matchesCapacity;
+      })
+      .sort((a, b) => naturalCompare(a.num, b.num));
   }, [restaurantTables, searchQuery, capacityFilter]);
 
   const resetFilters = () => {

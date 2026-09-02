@@ -27,6 +27,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { ImageUp, X } from "lucide-react";
 import { ImageItem } from "@/types/image-items";
+import { ConfirmModal } from "@/components/layout/confirm-modal";
 
 type Props = {
   triggerBtn?: React.ReactElement;
@@ -53,6 +54,9 @@ export function MenuFormSheet({
   const setIsOpen = isControlled ? externalOnOpenChange : setInternalOpen;
 
   const isEditing = Boolean(initialData);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingPayload, setPendingPayload] =
+    useState<Parameters<NonNullable<Props["onSubmit"]>>[0] | null>(null);
 
   const [images, setImages] = useState<ImageItem[]>(() =>
     initialData?.imageUrl
@@ -125,6 +129,16 @@ export function MenuFormSheet({
       imageFiles: newFiles,
       existingUrls,
     };
+
+    // `existingUrls` already reflects the exact set of images to keep, so we
+    // must not carry the stale pre-edit `imageUrl` list (it would duplicate).
+    delete (payload as { imageUrl?: string[] }).imageUrl;
+
+    if (isEditing) {
+      setPendingPayload(payload);
+      setConfirmOpen(true);
+      return;
+    }
 
     onSubmit?.(payload);
     setIsOpen?.(false);
@@ -359,6 +373,23 @@ export function MenuFormSheet({
           </SheetFooter>
         </form>
       </SheetContent>
+
+      <ConfirmModal
+        open={confirmOpen}
+        title="Confirmer les modifications"
+        description={`Confirmer la mise à jour du plat « ${formData.name} » ?`}
+        confirmLabel="Enregistrer"
+        onConfirm={() => {
+          if (pendingPayload) {
+            onSubmit?.(pendingPayload);
+            setPendingPayload(null);
+            setIsOpen?.(false);
+          }
+        }}
+        onOpenChange={(openValue) => {
+          if (!openValue) setConfirmOpen(false);
+        }}
+      />
     </Sheet>
   );
 }

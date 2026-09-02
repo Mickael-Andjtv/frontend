@@ -69,6 +69,7 @@ const TableCard = ({
   onDeleteTable,
 }: Props) => {
   const [showDelete, setShowDelete] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState<TableStatus | null>(null);
 
   const status = resTable.status ?? "AVAILABLE";
   const statusBadge = STATUS_BADGE[status] ?? STATUS_BADGE.AVAILABLE;
@@ -118,7 +119,7 @@ const TableCard = ({
               <Select
                 value={status}
                 onValueChange={(value) =>
-                  onUpdateStatus(resTable.id, value as TableStatus)
+                  setPendingStatus(value as TableStatus)
                 }
               >
                 <SelectTrigger
@@ -178,6 +179,24 @@ const TableCard = ({
         destructive
         onConfirm={() => onDeleteTable?.(resTable.id)}
         onOpenChange={setShowDelete}
+      />
+
+      <ConfirmModal
+        open={pendingStatus !== null}
+        title="Changer le statut de la table"
+        description={
+          pendingStatus
+            ? `Confirmer le changement de statut de la table ${resTable.num} vers « ${STATUS_LABELS[pendingStatus]} » ?`
+            : ""
+        }
+        confirmLabel="Confirmer"
+        onConfirm={() => {
+          if (pendingStatus) onUpdateStatus?.(resTable.id, pendingStatus);
+          setPendingStatus(null);
+        }}
+        onOpenChange={(openValue) => {
+          if (!openValue) setPendingStatus(null);
+        }}
       />
     </>
   );

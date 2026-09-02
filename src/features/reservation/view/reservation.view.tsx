@@ -2,43 +2,34 @@
 
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import ListComponent from "../components/list";
-import { ReservationFormSheet } from "../components/reservation-form";
 import {
   getReservations,
   updateReservation,
   updateReservationStatus,
-  createReservation,
   toApiTime,
 } from "@/services/reservations";
 import { getTables } from "@/services/tables";
-import { getCustomers } from "@/services/customers";
-import type { CreateReservationPayload } from "@/services/reservations";
 import type { Reservation, ReservationStatus } from "../types/reservation.type";
 import type { RestaurantTable } from "@/features/restaurant-table/types/table";
-import type { Customer } from "@/features/client/types/client.types";
+import { naturalCompare } from "@/lib/utils";
 
 const ReservationView = () => {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [tables, setTables] = useState<RestaurantTable[]>([]);
-  const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
 
   const loadData = async () => {
     try {
-      const [fetchedReservations, fetchedTables, fetchedCustomers] =
-        await Promise.all([
-          getReservations(),
-          getTables(),
-          getCustomers(),
-        ]);
+      const [fetchedReservations, fetchedTables] = await Promise.all([
+        getReservations(),
+        getTables(),
+      ]);
       setReservations(fetchedReservations);
-      setTables(fetchedTables);
-      setCustomers(fetchedCustomers);
+      setTables(
+        [...fetchedTables].sort((a, b) => naturalCompare(a.num, b.num)),
+      );
       setError(null);
     } catch (err) {
       setError(
@@ -53,11 +44,12 @@ const ReservationView = () => {
 
   useEffect(() => {
     const controller = new AbortController();
-    Promise.all([getReservations(), getTables(), getCustomers()])
-      .then(([fetchedReservations, fetchedTables, fetchedCustomers]) => {
+    Promise.all([getReservations(), getTables()])
+      .then(([fetchedReservations, fetchedTables]) => {
         setReservations(fetchedReservations);
-        setTables(fetchedTables);
-        setCustomers(fetchedCustomers);
+        setTables(
+          [...fetchedTables].sort((a, b) => naturalCompare(a.num, b.num)),
+        );
         setError(null);
       })
       .catch((err) =>
@@ -87,23 +79,6 @@ const ReservationView = () => {
       toast.error(
         err instanceof Error ? err.message : "Erreur lors du déplacement",
       );
-    }
-  };
-
-  const handleCreateReservation = async (
-    payload: CreateReservationPayload,
-  ) => {
-    setSaving(true);
-    try {
-      await createReservation(payload);
-      toast.success("Réservation créée avec succès");
-      await loadData();
-    } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Erreur lors de la création",
-      );
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -158,21 +133,7 @@ const ReservationView = () => {
     <div>
       <div className="flex justify-between items-center p-4 pb-0">
         <h1 className="text-xl font-bold">Réservations</h1>
-        <ReservationFormSheet
-          customers={customers}
-          tables={tables}
-          onSubmit={handleCreateReservation}
-          triggerBtn={
-            <Button
-              className="border-gray-900 border-2 hover:bg-gray-950 hover:text-white"
-              variant="outline"
-              disabled={saving}
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Ajouter
-            </Button>
-          }
-        />
+        <span className="text-sm text-slate-500">Historique &amp; gestion</span>
       </div>
       <ListComponent
         reservationData={reservations}
