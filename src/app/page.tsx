@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { LandingNavbar } from "@/features/landing/landing-navbar";
 import { Reveal } from "@/features/landing/reveal";
+import { Logo } from "@/components/brand/logo";
 import { useAuth } from "@/features/auth/auth-context";
 import { useCart } from "@/features/cart/cart-context";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader } from "@/components/ui/dialog";
@@ -492,10 +493,7 @@ export default function Home() {
         <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                <UtensilsCrossed className="h-4 w-4" />
-              </span>
-              <span className="text-lg font-bold">La Table d&apos;Or</span>
+              <Logo className="gap-2 [&>span:first-child]:size-9 [&>span:first-child] [&_svg]:size-4" />
             </div>
             <p className="mt-3 text-sm text-muted-foreground">
               Une expérience culinaire moderne et raffinée, au cœur de la

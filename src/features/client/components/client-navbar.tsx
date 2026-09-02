@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Badge } from "@/components/ui/badge";
+import { Logo } from "@/components/brand/logo";
 import { useAuth } from "@/features/auth/auth-context";
 import { useCart } from "@/features/cart/cart-context";
 import { cn } from "@/lib/utils";
@@ -53,12 +54,7 @@ export function ClientNavbar() {
           variant="ghost"
           className="px-0 hover:bg-transparent items-center gap-3"
         >
-          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
-            <UtensilsCrossed className="h-5 w-5" />
-          </span>
-          <span className="text-lg font-bold tracking-tight">
-            La Table d&apos;Or
-          </span>
+          <Logo />
         </ButtonLink>
 
         <nav className="hidden items-center gap-3 md:flex">

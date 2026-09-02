@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Order } from "../types/order-types";
+import { getCustomerAvatar } from "@/lib/avatar";
 import {
   Check,
   X,
@@ -52,6 +53,7 @@ const OrderCardComponent = ({
   const initials = `${order.customer.firstName?.[0] || ""}${
     order.customer.lastName?.[0] || ""
   }`.toUpperCase();
+  const avatarSrc = getCustomerAvatar(order.customer);
 
   const formattedTime = new Date(order.createdAt).toLocaleTimeString("fr-FR", {
     hour: "2-digit",
@@ -123,7 +125,7 @@ const OrderCardComponent = ({
         <div className="flex items-center gap-3 mt-2 pt-2 border-t border-slate-200/60">
           <Avatar className="h-9 w-9 border border-slate-200">
             <AvatarImage
-              src={order.customer.image}
+              src={avatarSrc}
               alt={`${order.customer.firstName} ${order.customer.lastName}`}
               className="object-cover"
             />

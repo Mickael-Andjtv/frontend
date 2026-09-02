@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/sheet";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getCustomerAvatar } from "@/lib/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -64,6 +65,7 @@ export const CustomerDetailsSheet = ({ customer, detail, onUpdate, autoOpen = fa
 
   const initials =
     `${data.firstName?.[0] || ""}${data.lastName?.[0] || ""}`.toUpperCase();
+  const avatarSrc = getCustomerAvatar(data);
 
   const handleSave = async () => {
     setSaving(true);
@@ -98,7 +100,7 @@ export const CustomerDetailsSheet = ({ customer, detail, onUpdate, autoOpen = fa
               <div className="flex items-center gap-4">
                 <Avatar className="h-14 w-14 border border-slate-200 shrink-0">
                   <AvatarImage
-                    src={data.image}
+                    src={avatarSrc}
                     alt={`${data.firstName} ${data.lastName}`}
                     className="object-cover"
                   />

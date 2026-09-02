@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+import { Logo } from "@/components/brand/logo";
 
 const items = [
   { title: "Tableau de bord", url: "/inventory/dashboard", icon: LayoutDashboard },
@@ -38,23 +38,12 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <div className="relative h-full w-full group-data-[collapsible=icon]:hidden">
-          <Image
-            src="/images/logo-full.svg"
-            alt="logo"
-            width={200}
-            height={0}
-            className="object-contain object-left"
-          />
+        <div className="relative h-full w-full px-1 group-data-[collapsible=icon]:hidden">
+          <Logo />
         </div>
 
-        <div className="relative h-8 w-8 hidden group-data-[collapsible=icon]:block mx-auto">
-          <Image
-            src="/images/logo-stock.svg"
-            alt="logo"
-            fill
-            className="object-contain"
-          />
+        <div className="relative mx-auto hidden size-8 group-data-[collapsible=icon]:block">
+          <Logo variant="icon" className="size-8 gap-0 [&>span:first-child]:size-8 [&_svg]:size-4" />
         </div>
       </SidebarHeader>
 

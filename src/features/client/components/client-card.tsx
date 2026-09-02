@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Mail, Phone, Calendar, ShoppingBag, ShieldAlert } from "lucide-react";
 import { formatAr } from "@/lib/money";
+import { getCustomerAvatar } from "@/lib/avatar";
 
 type Props = {
   customer: Customer;
@@ -21,6 +22,7 @@ const TIER_BADGES: Record<string, string> = {
 const ClientCardComponent = ({ customer }: Props) => {
   const initials =
     `${customer.firstName?.[0] || ""}${customer.lastName?.[0] || ""}`.toUpperCase();
+  const avatarSrc = getCustomerAvatar(customer);
 
   return (
     <Card className="h-full rounded-none border border-slate-200 bg-white hover:border-slate-400 hover:shadow-md transition-all cursor-pointer shadow-sm">
@@ -29,7 +31,7 @@ const ClientCardComponent = ({ customer }: Props) => {
           <div className="flex items-center gap-3">
             <Avatar className="h-12 w-12  border border-slate-200">
               <AvatarImage
-                src={customer.image}
+                src={avatarSrc}
                 alt={`${customer.firstName} ${customer.lastName}`}
                 className="object-cover"
               />

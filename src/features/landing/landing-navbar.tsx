@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  UtensilsCrossed,
   Menu as MenuIcon,
   X,
   LogIn,
@@ -15,6 +14,7 @@ import {
 import { useAuth } from "@/features/auth/auth-context";
 import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
+import { Logo } from "@/components/brand/logo";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
@@ -60,12 +60,12 @@ export function LandingNavbar() {
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
         <a href="#accueil" className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground">
-            <UtensilsCrossed className="h-4 w-4" />
-          </span>
-          <span className="text-lg font-bold tracking-tight">
-            La Table d&apos;Or
-          </span>
+          <Logo
+            className={cn(
+              "gap-2 [&>span:first-child]:size-9 [&>span:first-child] [&_svg]:size-4",
+              !scrolled && "[&>span:nth-child(2)]:text-white"
+            )}
+          />
         </a>
 
         <nav

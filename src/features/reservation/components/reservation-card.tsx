@@ -5,6 +5,7 @@ import { useDraggable } from "@dnd-kit/core";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Customer } from "@/features/client/types/client.types";
+import { getCustomerAvatar } from "@/lib/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
   Clock,
@@ -116,6 +117,7 @@ export const ReservationCard = ({
   const initials = `${customer.firstName?.[0] || ""}${
     customer.lastName?.[0] || ""
   }`.toUpperCase();
+  const avatarSrc = getCustomerAvatar(customer);
 
   const statusUpper = status.toUpperCase();
   const currentStatusStyle = STATUS_STYLING[statusUpper] || {
@@ -159,7 +161,7 @@ export const ReservationCard = ({
             <div className="flex items-center gap-2 truncate">
               <Avatar className="h-7 w-7 border border-slate-200 shrink-0">
                 <AvatarImage
-                  src={customer.image}
+                  src={avatarSrc}
                   alt={`${customer.firstName} ${customer.lastName}`}
                   className="object-cover"
                 />

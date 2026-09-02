@@ -3,12 +3,13 @@
 import React, { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { UtensilsCrossed, Loader2, LogIn } from "lucide-react";
+import { Loader2, LogIn } from "lucide-react";
 import { useAuth } from "@/features/auth/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Logo } from "@/components/brand/logo";
 import { toast } from "sonner";
 
 export default function LoginPage() {
@@ -56,10 +57,7 @@ function LoginContent() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-muted/40 px-4">
       <div className="w-full max-w-md">
         <div className="mb-6 flex flex-col items-center gap-3 text-center">
-          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground">
-            <UtensilsCrossed className="h-7 w-7" />
-          </span>
-          <h1 className="text-2xl font-bold">La Table d&apos;Or</h1>
+          <Logo />
           <p className="text-sm text-muted-foreground">
             Connectez-vous pour continuer
           </p>
