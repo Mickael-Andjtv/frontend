@@ -19,7 +19,11 @@ import { getOrders, updateOrderStatus } from "@/services/orders";
 import type { Order } from "../types/order-types";
 import { usePolling } from "@/hooks/usePolling";
 
-const OrderView = () => {
+type Props = {
+  focusId?: string;
+};
+
+const OrderView = ({ focusId }: Props) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -196,6 +200,7 @@ const OrderView = () => {
                 onAccept={handleAccept}
                 onReject={handleReject}
                 onStatusChange={handleStatusChange}
+                focusId={focusId}
               />
             ) : (
               <div className="text-center py-12 border border-dashed border-slate-200 rounded-none">
@@ -356,7 +361,7 @@ const OrderView = () => {
             </div>
 
             {filteredHistoryOrders.length > 0 ? (
-              <ListOrderComponent orders={filteredHistoryOrders} />
+              <ListOrderComponent orders={filteredHistoryOrders} focusId={focusId} />
             ) : (
               <div className="text-center py-12 border border-dashed border-slate-200 rounded-none">
                 <p className="text-slate-500 text-sm">

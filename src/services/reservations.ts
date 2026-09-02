@@ -35,24 +35,56 @@ export type UpdateReservationPayload = {
   specialRequest?: string | null;
 };
 
-export function parseReservationTime(apiTime: string): string {
-  const [hours, minutes] = apiTime.split(":").map(Number);
-  if (isNaN(hours)) return apiTime;
+/**
+ * Normalize an API time value into 24h "HH:mm:ss" (or "HH:mm") form.
+ *
+ * Backend `time` fields are serialized as "HH:MM:SS", but this guard also
+ * accepts "HH:MM" or a number of hours/minutes so we never crash on a value
+ * we do not fully control. Returns `null` when the value is empty/malformed.
+ */
+export function normalizeApiTime(value: string | null | undefined): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  const match = trimmed.match(/^(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?\s*(AM|PM)?$/i);
+  if (!match) return null;
+
+  let hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  const seconds = match[3] ? Number(match[3]) : 0;
+  const suffix = (match[4] ?? "").toUpperCase();
+
+  if (hours > 23 || minutes > 59 || seconds > 59) return null;
+  if (suffix === "PM" && hours !== 12) hours += 12;
+  if (suffix === "AM" && hours === 12) hours = 0;
+
+  const hh = String(hours).padStart(2, "0");
+  const mm = String(minutes).padStart(2, "0");
+  const ss = match[3] ? String(seconds).padStart(2, "0") : "00";
+  return `${hh}:${mm}:${ss}`;
+}
+
+/**
+ * Convert an API time value into a 12h display string like "12:30 PM".
+ * Falls back to the raw input (never throws, never returns undefined).
+ */
+export function parseReservationTime(apiTime: string | null | undefined): string {
+  const normalized = normalizeApiTime(apiTime);
+  if (!normalized) {
+    return typeof apiTime === "string" && apiTime.trim() ? apiTime.trim() : "";
+  }
+
+  const [hh, mm] = normalized.split(":");
+  const hours = Number(hh);
   const suffix = hours >= 12 ? "PM" : "AM";
   const hour12 = hours % 12 === 0 ? 12 : hours % 12;
-  const displayMinutes = String(minutes ?? 0).padStart(2, "0");
-  return `${hour12}:${displayMinutes === "00" ? "00" : displayMinutes} ${suffix}`;
+  return `${hour12}:${mm} ${suffix}`;
 }
 
 export function toApiTime(displayTime: string): string {
-  const match = displayTime.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
-  if (!match) return displayTime;
-  let hours = Number(match[1]);
-  const minutes = match[2];
-  const suffix = match[3]?.toUpperCase();
-  if (suffix === "PM" && hours !== 12) hours += 12;
-  if (suffix === "AM" && hours === 12) hours = 0;
-  return `${String(hours).padStart(2, "0")}:${minutes}:00`;
+  const normalized = normalizeApiTime(displayTime);
+  return normalized ?? displayTime;
 }
 
 function mapReservation(dto: ReservationDto, customerMap: Map<string, Customer>): Reservation {

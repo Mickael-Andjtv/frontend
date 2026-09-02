@@ -41,6 +41,8 @@ type Props = {
   status: string;
   customer: Customer;
   isPast?: boolean;
+  isFocused?: boolean;
+  autoOpen?: boolean;
   onStatusChange?: (id: string, status: ReservationStatus) => void;
 };
 
@@ -88,6 +90,8 @@ export const ReservationCard = ({
   description,
   customer,
   isPast = false,
+  isFocused = false,
+  autoOpen = false,
   onStatusChange,
 }: Props) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
@@ -96,7 +100,7 @@ export const ReservationCard = ({
       disabled: isPast || !id,
     });
 
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(() => autoOpen);
   const [selectedStatus, setSelectedStatus] = useState<ReservationStatus>(
     () => (status.toUpperCase() as ReservationStatus) || "PENDING",
   );
@@ -143,6 +147,8 @@ export const ReservationCard = ({
         <Card
           onClick={openSheet}
           className={`h-full w-full rounded-none border border-slate-200 border-l-4 ${currentStatusStyle.border} bg-white p-2.5 shadow-sm transition-all flex flex-col justify-between gap-1.5 ${
+            isFocused ? "ring-2 ring-sky-500" : ""
+          } ${
             isPast
               ? "opacity-60 grayscale cursor-not-allowed select-none"
               : "cursor-pointer hover:border-slate-400"

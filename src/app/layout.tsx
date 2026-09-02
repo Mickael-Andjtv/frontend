@@ -21,7 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="fr" className={`${raleway.variable} h-full antialiased `}>
       <body className="min-h-full flex flex-col ">
         <Providers>{children}</Providers>
-        <Toaster position="top-right" richColors closeButton />
+        <Toaster position="top-right" richColors closeButton className="!z-[9999]" />
       </body>
     </html>
   );

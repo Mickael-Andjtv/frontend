@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Bell, Check, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import {
@@ -9,6 +10,7 @@ import {
   getUnreadNotificationCount,
   markNotificationRead,
   markAllNotificationsRead,
+  resolveNotificationTarget,
   type AppNotification,
   type NotificationType,
 } from "@/services/notifications";
@@ -51,10 +53,12 @@ function timeAgo(dateStr: string): string {
 }
 
 export function NotificationPanel() {
+  const router = useRouter();
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [markingAll, setMarkingAll] = useState(false);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -92,6 +96,14 @@ export function NotificationPanel() {
     }
   };
 
+  const handleOpenNotification = async (notification: AppNotification) => {
+    if (!notification.isRead) {
+      await handleMarkRead(notification.id);
+    }
+    setOpen(false);
+    router.push(resolveNotificationTarget(notification));
+  };
+
   const handleMarkAllRead = async () => {
     setMarkingAll(true);
     try {
@@ -109,7 +121,7 @@ export function NotificationPanel() {
   const readNotifications = notifications.filter((n) => n.isRead);
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
         className={cn(
           "relative p-2 rounded-lg hover:bg-slate-100 transition-colors",
@@ -153,10 +165,20 @@ export function NotificationPanel() {
         ) : (
           <div className="max-h-[400px] overflow-y-auto">
             {unreadNotifications.map((notif) => (
-              <NotificationItem key={notif.id} notification={notif} onMarkRead={handleMarkRead} />
+              <NotificationItem
+                key={notif.id}
+                notification={notif}
+                onMarkRead={handleMarkRead}
+                onOpen={handleOpenNotification}
+              />
             ))}
             {readNotifications.map((notif) => (
-              <NotificationItem key={notif.id} notification={notif} onMarkRead={handleMarkRead} />
+              <NotificationItem
+                key={notif.id}
+                notification={notif}
+                onMarkRead={handleMarkRead}
+                onOpen={handleOpenNotification}
+              />
             ))}
           </div>
         )}
@@ -172,14 +194,18 @@ export function NotificationPanel() {
 function NotificationItem({
   notification,
   onMarkRead,
+  onOpen,
 }: {
   notification: AppNotification;
   onMarkRead: (id: string) => void;
+  onOpen: (notification: AppNotification) => void;
 }) {
   return (
-    <div
+    <button
+      type="button"
+      onClick={() => onOpen(notification)}
       className={cn(
-        "px-4 py-3 border-b border-slate-100 hover:bg-slate-50 transition-colors",
+        "w-full text-left px-4 py-3 border-b border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer",
         notification.isRead ? "opacity-70" : "bg-sky-50",
       )}
     >
@@ -198,15 +224,26 @@ function NotificationItem({
           <p className="mt-1.5 text-[11px] text-slate-400">{timeAgo(notification.createdAt)}</p>
         </div>
         {!notification.isRead && (
-          <button
-            onClick={() => onMarkRead(notification.id)}
+          <span
+            role="button"
+            tabIndex={0}
+            onClick={(e) => {
+              e.stopPropagation();
+              onMarkRead(notification.id);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.stopPropagation();
+                onMarkRead(notification.id);
+              }
+            }}
             className="flex-shrink-0 text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-100"
             aria-label="Marquer comme lu"
           >
             <Check className="h-4 w-4" />
-          </button>
+          </span>
         )}
       </div>
-    </div>
+    </button>
   );
 }

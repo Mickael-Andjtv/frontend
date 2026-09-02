@@ -33,6 +33,7 @@ type Props = {
   customer: Customer;
   detail: React.ReactNode;
   onUpdate?: (customer: Customer) => void;
+  autoOpen?: boolean;
 };
 
 const TIER_BADGES: Record<string, string> = {
@@ -55,9 +56,9 @@ const computeTier = (points: number): LoyaltyTier => {
   return "BRONZE";
 };
 
-export const CustomerDetailsSheet = ({ customer, detail, onUpdate }: Props) => {
+export const CustomerDetailsSheet = ({ customer, detail, onUpdate, autoOpen = false }: Props) => {
   const [data, setData] = useState<Customer>(customer);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(() => autoOpen);
   const [saving, setSaving] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 

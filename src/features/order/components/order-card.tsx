@@ -32,6 +32,7 @@ type Props = {
   onAccept?: (orderId: string) => void;
   onReject?: (orderId: string) => void;
   onStatusChange?: (orderId: string, newStatus: Order["status"]) => void;
+  isFocused?: boolean;
 };
 
 const OrderCardComponent = ({
@@ -39,6 +40,7 @@ const OrderCardComponent = ({
   onAccept,
   onReject,
   onStatusChange,
+  isFocused = false,
 }: Props) => {
   const [showReject, setShowReject] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<{
@@ -100,7 +102,7 @@ const OrderCardComponent = ({
   };
 
   return (
-    <Card className="w-full max-w-md shadow-md border-slate-200 overflow-hidden flex flex-col justify-between">
+    <Card className={`w-full max-w-md shadow-md border-slate-200 overflow-hidden flex flex-col justify-between ${isFocused ? "ring-2 ring-sky-500" : ""}`}>
       <CardHeader className="bg-slate-50 border-b border-slate-100 pb-3">
         <div className="flex justify-between items-start mb-2">
           <div>

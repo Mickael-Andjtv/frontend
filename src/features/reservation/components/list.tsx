@@ -28,7 +28,7 @@ import {
   X,
 } from "lucide-react";
 import { ConfirmMoveModal } from "@/components/layout/confirm-move";
-import { toApiTime } from "@/services/reservations";
+import { normalizeApiTime } from "@/services/reservations";
 import { RESERVATION_TIME_SLOTS } from "@/features/reservation/constants/creneaux";
 
 type Props = {
@@ -43,6 +43,7 @@ type Props = {
     reservationId: string,
     status: ReservationStatus,
   ) => void;
+  focusId?: string;
 };
 
 const CRENAUX = RESERVATION_TIME_SLOTS;
@@ -54,7 +55,8 @@ const todayISO = new Date().toISOString().slice(0, 10);
  * has elapsed. While the slot is ongoing or in the future, it stays editable.
  */
 function isReservationPast(reservation: Reservation): boolean {
-  const apiTime = toApiTime(reservation.reservationTime) || "00:00:00";
+  const apiTime = normalizeApiTime(reservation.reservationTime);
+  if (!apiTime) return true;
   const [hours, minutes] = apiTime.split(":").map((p) => Number(p) || 0);
   const slotStart = new Date(
     `${reservation.reservationDate}T${String(hours).padStart(2, "0")}:${String(
@@ -91,20 +93,19 @@ const ListReservation = ({
   tabledata,
   onUpdateReservation,
   onStatusChange,
+  focusId,
 }: Props) => {
-  const [start, setStart] = useState(0);
+  const itemsPerPage = 5;
 
-  // A drag only starts after the cursor moves at least MIN_DRAG_DISTANCE px.
-  // A plain pointer down / click without real movement is therefore handled as
-  // a regular click (opens the status Sheet) instead of a drag & drop.
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 8 },
-    }),
+  const focusedReservation = useMemo(
+    () => reservations.find((r) => r.id === focusId),
+    [reservations, focusId],
   );
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedDate, setSelectedDate] = useState(todayISO);
+  const [selectedDate, setSelectedDate] = useState(
+    () => focusedReservation?.reservationDate ?? todayISO,
+  );
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
 
   const [pendingMove, setPendingMove] = useState<{
@@ -114,7 +115,41 @@ const ListReservation = ({
     targetTime: string;
   } | null>(null);
 
-  const itemsPerPage = 5;
+  // Keep the focus target's table column visible on first load.
+  const initialStart = useMemo(() => {
+    if (!focusedReservation || !focusedReservation.tableId) return 0;
+    const idx = tabledata.findIndex((t) => t.id === focusedReservation.tableId);
+    if (idx < 0) return 0;
+    const maxStart = Math.max(0, tabledata.length - itemsPerPage);
+    return Math.min(maxStart, Math.floor(idx / itemsPerPage) * itemsPerPage);
+  }, [focusedReservation, tabledata, itemsPerPage]);
+
+  const [start, setStart] = useState(() => (focusId ? initialStart : 0));
+
+  // When arriving with a ?id= focus, position the date filter and the table
+  // column on the targeted reservation once its data has loaded. We adjust
+  // state during render (not in an effect) using the "focused date already
+  // applied?" guard so this converges without an extra render cycle.
+  const [focusedDate, setFocusedDate] = useState<string | null>(null);
+  if (
+    focusId &&
+    focusedDate === null &&
+    focusedReservation &&
+    focusedReservation.reservationDate !== focusedDate
+  ) {
+    setFocusedDate(focusedReservation.reservationDate);
+    setSelectedDate(focusedReservation.reservationDate);
+    setStart(initialStart);
+  }
+
+  // A drag only starts after the cursor moves at least MIN_DRAG_DISTANCE px.
+  // A plain pointer down / click without real movement is therefore handled as
+  // a regular click (opens the status Sheet) instead of a drag & drop.
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    }),
+  );
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -398,6 +433,8 @@ const ListReservation = ({
                           status={filter.status}
                           description={filter.specialRequest ?? ""}
                           isPast={isReservationPast(filter)}
+                          isFocused={filter.id === focusId}
+                          autoOpen={filter.id === focusId}
                           onStatusChange={onStatusChange}
                         />
                       ) : (

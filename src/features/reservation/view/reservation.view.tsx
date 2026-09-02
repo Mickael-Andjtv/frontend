@@ -15,7 +15,11 @@ import type { RestaurantTable } from "@/features/restaurant-table/types/table";
 import { naturalCompare } from "@/lib/utils";
 import { usePolling } from "@/hooks/usePolling";
 
-const ReservationView = () => {
+type Props = {
+  focusId?: string;
+};
+
+const ReservationView = ({ focusId }: Props) => {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [tables, setTables] = useState<RestaurantTable[]>([]);
   const [loading, setLoading] = useState(true);
@@ -153,6 +157,7 @@ const ReservationView = () => {
         tabledata={tables}
         onUpdateReservation={handleUpdateReservation}
         onStatusChange={handleStatusChange}
+        focusId={focusId}
       />
     </div>
   );

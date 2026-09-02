@@ -11,7 +11,11 @@ import type { CreateCustomerPayload } from "@/services/customers";
 import type { Customer } from "../types/client.types";
 import { usePolling } from "@/hooks/usePolling";
 
-const ClientView = () => {
+type Props = {
+  focusId?: string;
+};
+
+const ClientView = ({ focusId }: Props) => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -109,7 +113,7 @@ const ClientView = () => {
           </button>
         </div>
       ) : (
-        <ListClientComponent clients={customers} onUpdateCustomer={handleUpdate} />
+        <ListClientComponent clients={customers} onUpdateCustomer={handleUpdate} focusId={focusId} />
       )}
     </div>
   );

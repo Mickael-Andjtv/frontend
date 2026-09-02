@@ -6,6 +6,7 @@ type Props = {
   onAccept?: (orderId: string) => void;
   onReject?: (orderId: string) => void;
   onStatusChange?: (orderId: string, newStatus: Order["status"]) => void;
+  focusId?: string;
 };
 
 const ListOrderComponent = ({
@@ -13,6 +14,7 @@ const ListOrderComponent = ({
   onAccept,
   onReject,
   onStatusChange,
+  focusId,
 }: Props) => {
   return (
     <div className="grid grid-cols-4 gap-4">
@@ -23,6 +25,7 @@ const ListOrderComponent = ({
           onAccept={onAccept}
           onReject={onReject}
           onStatusChange={onStatusChange}
+          isFocused={ord.id === focusId}
         />
       ))}
     </div>
