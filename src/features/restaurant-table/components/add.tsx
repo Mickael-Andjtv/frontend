@@ -18,23 +18,22 @@ type Props = {
   addBtn: React.ReactElement;
   tableData: RestaurantTable;
   isAdd?: boolean;
+  onSubmit?: (data: RestaurantTable) => void;
 };
 
-export function AddTableComponet({ addBtn, tableData, isAdd }: Props) {
+export function AddTableComponet({ addBtn, tableData, isAdd, onSubmit }: Props) {
   const [open, setOpen] = useState(false);
   const [table, setTable] = useState<RestaurantTable>(tableData);
 
   const addTable = () => {
-    console.log("data", table);
+    onSubmit?.({ ...table, id: "" });
     setOpen(false);
   };
 
   const editTable = () => {
-    console.log("data", table);
+    onSubmit?.(table);
     setOpen(false);
   };
-
-  //TODO: Add table implement with real api
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>

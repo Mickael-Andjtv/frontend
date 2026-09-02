@@ -2,7 +2,8 @@
 
 import React, { useState, useMemo } from "react";
 import { DndContext, DragEndEvent, useDroppable } from "@dnd-kit/core";
-import { Reservation } from "../types/reservation.type";
+import { toast } from "sonner";
+import { Reservation, ReservationStatus } from "../types/reservation.type";
 import { RestaurantTable } from "@/features/restaurant-table/types/table";
 import {
   Table,
@@ -36,6 +37,10 @@ type Props = {
     newTableId: string,
     newTime: string,
   ) => void;
+  onStatusChange?: (
+    reservationId: string,
+    status: ReservationStatus,
+  ) => void;
 };
 
 const CRENAUX = [
@@ -52,6 +57,8 @@ const CRENAUX = [
   "7:00 PM",
   "8:00 PM",
 ];
+
+const todayISO = new Date().toISOString().slice(0, 10);
 
 const DroppableCell = ({
   id,
@@ -78,13 +85,14 @@ const ListReservation = ({
   reservationData: initialReservations,
   tabledata,
   onUpdateReservation,
+  onStatusChange,
 }: Props) => {
   const [reservations, setReservations] =
     useState<Reservation[]>(initialReservations);
   const [start, setStart] = useState(0);
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedDate, setSelectedDate] = useState("2026-08-30");
+  const [selectedDate, setSelectedDate] = useState(todayISO);
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
 
   const [pendingMove, setPendingMove] = useState<{
@@ -111,7 +119,7 @@ const ListReservation = ({
     );
 
     if (isOccupied) {
-      alert("Cette table est déjà réservée à ce créneau !");
+      toast.error("Cette table est déjà réservée à ce créneau !");
       return;
     }
 
@@ -175,13 +183,13 @@ const ListReservation = ({
   const resetFilters = () => {
     setSearchQuery("");
     setStatusFilter("ALL");
-    setSelectedDate("2026-08-30");
+    setSelectedDate(todayISO);
   };
 
   const hasActiveFilters =
     searchQuery !== "" ||
     statusFilter !== "ALL" ||
-    selectedDate !== "2026-08-30";
+    selectedDate !== todayISO;
 
   const visibleTable = tabledata.slice(start, start + itemsPerPage);
 
@@ -380,6 +388,7 @@ const ListReservation = ({
                           dateEnd={filter.reservationTime}
                           status={filter.status}
                           description={filter.specialRequest ?? ""}
+                          onStatusChange={onStatusChange}
                         />
                       ) : (
                         <ReservationEmptyCard />

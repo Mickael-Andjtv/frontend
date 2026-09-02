@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -326,11 +325,11 @@ export function MenuFormSheet({
                       key={`${img.id}-${index}`}
                       className="relative h-24 overflow-hidden border border-slate-200 group bg-slate-100"
                     >
-                      <Image
+                      {/* eslint-disable-next-line @next/next/no-img-element -- preview uses blob/object URLs unsupported by next/image */}
+                        <img
                         src={img.url}
                         alt={`Aperçu ${index + 1}`}
-                        fill
-                        className="object-cover"
+                        className="object-cover w-full h-full"
                       />
                       <button
                         type="button"

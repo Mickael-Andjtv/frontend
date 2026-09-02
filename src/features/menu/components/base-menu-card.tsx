@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Image from "next/image";
 import { Clock } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { MenuItem } from "../types/menu.types";
@@ -44,18 +43,17 @@ export const BaseMenuCard = ({
         <CardHeader className="p-0 rounded-none relative h-48 w-full overflow-hidden bg-slate-100 group">
           {/* Images avec transition en fondu style écran publicitaire */}
           {images.map((src, index) => (
-            <Image
+            // eslint-disable-next-line @next/next/no-img-element -- backend http images unsupported by next/image optimizer
+            <img
               key={`${src}-${index}`}
               src={src}
               alt={`${menuItem.name} - Vue ${index + 1}`}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              className={`object-cover transition-opacity duration-700 ease-in-out ${
+              loading={index === 0 ? "eager" : "lazy"}
+              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ease-in-out ${
                 index === currentIndex
                   ? "opacity-100 scale-100"
                   : "opacity-0 scale-105"
               } ${imageClassName}`}
-              priority={index === 0}
             />
           ))}
 

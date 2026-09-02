@@ -30,6 +30,7 @@ import { Mail, Phone, UserCheck, Award } from "lucide-react";
 type Props = {
   customer: Customer;
   detail: React.ReactNode;
+  onUpdate?: (customer: Customer) => void;
 };
 
 const TIER_BADGES: Record<string, string> = {
@@ -39,17 +40,22 @@ const TIER_BADGES: Record<string, string> = {
   VIP: "bg-purple-600 text-white hover:bg-purple-600",
 };
 
-export const CustomerDetailsSheet = ({ customer, detail }: Props) => {
+export const CustomerDetailsSheet = ({ customer, detail, onUpdate }: Props) => {
   const [data, setData] = useState<Customer>(customer);
   const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const initials =
     `${data.firstName?.[0] || ""}${data.lastName?.[0] || ""}`.toUpperCase();
 
-  const handleSave = () => {
-    console.log("Client modifié :", data);
-
-    setOpen(false);
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await onUpdate?.(data);
+      setOpen(false);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -322,9 +328,10 @@ export const CustomerDetailsSheet = ({ customer, detail }: Props) => {
 
               <Button
                 onClick={handleSave}
+                disabled={saving}
                 className="rounded-none text-xs h-9 bg-slate-900 text-white hover:bg-slate-800"
               >
-                Sauvegarder les modifications
+                {saving ? "Enregistrement..." : "Sauvegarder les modifications"}
               </Button>
             </div>
           </SheetFooter>

@@ -12,12 +12,9 @@ export const metadata: Metadata = {
   title: "Stock Management App",
   description:
     "A Saas application for managing stock and inventory efficiently.",
-  icons: {
-    icon: "/favicon.svg",
-  },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${raleway.variable} h-full antialiased `}>
       <body className="min-h-full flex flex-col ">{children}</body>

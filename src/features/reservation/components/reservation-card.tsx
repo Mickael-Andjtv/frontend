@@ -1,11 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Customer } from "@/features/client/types/client.types";
 import { Badge } from "@/components/ui/badge";
-import { Clock, ShieldAlert, MessageSquare } from "lucide-react";
+import { Clock, ShieldAlert, MessageSquare, Check, X } from "lucide-react";
+import { ConfirmModal } from "@/components/layout/confirm-modal";
+import type { ReservationStatus } from "../types/reservation.type";
 
 type Props = {
   id?: string;
@@ -13,6 +16,7 @@ type Props = {
   description?: string;
   status: string;
   customer: Customer;
+  onStatusChange?: (id: string, status: ReservationStatus) => void;
 };
 
 const TIER_BADGES: Record<string, string> = {
@@ -43,12 +47,17 @@ export const ReservationCard = ({
   dateEnd,
   description,
   customer,
+  onStatusChange,
 }: Props) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
       id: id || "",
       disabled: !id,
     });
+
+  const [confirmAction, setConfirmAction] = useState<
+    "confirm" | "cancel" | null
+  >(null);
 
   const style = transform
     ? {
@@ -67,81 +76,138 @@ export const ReservationCard = ({
     badge: "bg-slate-500 text-white",
   };
 
+  const canConfirm = statusUpper === "PENDING";
+  const canCancel =
+    statusUpper !== "CANCELLED" && statusUpper !== "COMPLETED";
+
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...listeners}
-      {...attributes}
-      className={`h-full w-full ${isDragging ? "opacity-50" : ""}`}
-    >
-      <Card
-        className={`h-full w-full rounded-none border border-slate-200 border-l-4 ${currentStatusStyle.border} bg-white p-2.5 shadow-sm hover:border-slate-400 transition-all cursor-grab active:cursor-grabbing flex flex-col justify-between gap-1.5`}
+    <>
+      <div
+        ref={setNodeRef}
+        style={style}
+        {...listeners}
+        {...attributes}
+        className={`h-full w-full ${isDragging ? "opacity-50" : ""}`}
       >
-        {/* En-tête : Avatar & Infos Client */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 truncate">
-            <Avatar className="h-7 w-7 border border-slate-200 shrink-0">
-              <AvatarImage
-                src={customer.image}
-                alt={`${customer.firstName} ${customer.lastName}`}
-                className="object-cover"
-              />
-              <AvatarFallback className="bg-slate-900 text-white font-medium text-[10px]">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
+        <Card
+          className={`h-full w-full rounded-none border border-slate-200 border-l-4 ${currentStatusStyle.border} bg-white p-2.5 shadow-sm hover:border-slate-400 transition-all cursor-grab active:cursor-grabbing flex flex-col justify-between gap-1.5`}
+        >
+          {/* En-tête : Avatar & Infos Client */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 truncate">
+              <Avatar className="h-7 w-7 border border-slate-200 shrink-0">
+                <AvatarImage
+                  src={customer.image}
+                  alt={`${customer.firstName} ${customer.lastName}`}
+                  className="object-cover"
+                />
+                <AvatarFallback className="bg-slate-900 text-white font-medium text-[10px]">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
 
-            <div className="flex flex-col truncate">
-              <span className="font-semibold text-slate-900 text-xs truncate leading-tight">
-                {customer.firstName} {customer.lastName}
-              </span>
-              
-              <div className="flex items-center gap-1 mt-0.5">
-                {customer.loyalty?.tier && (
-                  <Badge
-                    className={`rounded-none text-[9px] px-1 py-0 font-bold uppercase ${
-                      TIER_BADGES[customer.loyalty.tier] || "bg-slate-500"
-                    }`}
-                  >
-                    {customer.loyalty.tier}
-                  </Badge>
-                )}
+              <div className="flex flex-col truncate">
+                <span className="font-semibold text-slate-900 text-xs truncate leading-tight">
+                  {customer.firstName} {customer.lastName}
+                </span>
 
-                {customer.status === "BLOCKED" && (
-                  <Badge
-                    variant="destructive"
-                    className="rounded-none text-[9px] px-1 py-0 flex items-center gap-0.5"
-                  >
-                    <ShieldAlert className="w-2.5 h-2.5" />
-                  </Badge>
-                )}
+                <div className="flex items-center gap-1 mt-0.5">
+                  {customer.loyalty?.tier && (
+                    <Badge
+                      className={`rounded-none text-[9px] px-1 py-0 font-bold uppercase ${
+                        TIER_BADGES[customer.loyalty.tier] || "bg-slate-500"
+                      }`}
+                    >
+                      {customer.loyalty.tier}
+                    </Badge>
+                  )}
+
+                  {customer.status === "BLOCKED" && (
+                    <Badge
+                      variant="destructive"
+                      className="rounded-none text-[9px] px-1 py-0 flex items-center gap-0.5"
+                    >
+                      <ShieldAlert className="w-2.5 h-2.5" />
+                    </Badge>
+                  )}
+                </div>
               </div>
+            </div>
+
+            <div className="flex flex-col items-end shrink-0 gap-0.5">
+              <Badge
+                className={`rounded-none text-[9px] px-1.5 py-0 font-bold uppercase ${currentStatusStyle.badge}`}
+              >
+                {status}
+              </Badge>
+              <span className="text-[10px] text-slate-500 font-medium flex items-center gap-1">
+                <Clock className="w-2.5 h-2.5 text-slate-400" />
+                {dateEnd}
+              </span>
             </div>
           </div>
 
-          <div className="flex flex-col items-end shrink-0 gap-0.5">
-            <Badge
-              className={`rounded-none text-[9px] px-1.5 py-0 font-bold uppercase ${currentStatusStyle.badge}`}
-            >
-              {status}
-            </Badge>
-            <span className="text-[10px] text-slate-500 font-medium flex items-center gap-1">
-              <Clock className="w-2.5 h-2.5 text-slate-400" />
-              {dateEnd}
-            </span>
-          </div>
-        </div>
+          {/* Note / Demande spéciale */}
+          {description && (
+            <div className="flex items-center gap-1 text-[10px] text-slate-500 italic bg-slate-50 p-1 border border-slate-100 truncate">
+              <MessageSquare className="w-2.5 h-2.5 text-slate-400 shrink-0" />
+              <span className="truncate">{description}</span>
+            </div>
+          )}
 
-        {/* Note / Demande spéciale */}
-        {description && (
-          <div className="flex items-center gap-1 text-[10px] text-slate-500 italic bg-slate-50 p-1 border border-slate-100 truncate">
-            <MessageSquare className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-            <span className="truncate">{description}</span>
-          </div>
-        )}
-      </Card>
-    </div>
+          {/* Actions */}
+          {(canConfirm || canCancel) && id && onStatusChange && (
+            <div
+              className="flex items-center gap-1.5"
+              onPointerDown={(e) => e.stopPropagation()}
+            >
+              {canConfirm && (
+                <button
+                  onClick={() => setConfirmAction("confirm")}
+                  className="h-6 flex-1 rounded-none border border-emerald-600 text-emerald-700 text-[10px] font-medium hover:bg-emerald-600 hover:text-white transition-colors flex items-center justify-center gap-1"
+                >
+                  <Check className="w-3 h-3" /> Confirmer
+                </button>
+              )}
+              {canCancel && (
+                <button
+                  onClick={() => setConfirmAction("cancel")}
+                  className="h-6 flex-1 rounded-none border border-rose-600/40 text-rose-600 text-[10px] font-medium hover:bg-rose-600 hover:text-white transition-colors flex items-center justify-center gap-1"
+                >
+                  <X className="w-3 h-3" /> Annuler
+                </button>
+              )}
+            </div>
+          )}
+        </Card>
+      </div>
+
+      <ConfirmModal
+        open={confirmAction !== null}
+        title={
+          confirmAction === "confirm"
+            ? "Confirmer la réservation"
+            : "Annuler la réservation"
+        }
+        description={
+          confirmAction === "confirm"
+            ? `Confirmer la réservation de ${customer.firstName} ${customer.lastName} (${dateEnd}) ?`
+            : `Annuler définitivement la réservation de ${customer.firstName} ${customer.lastName} (${dateEnd}) ?`
+        }
+        confirmLabel={confirmAction === "confirm" ? "Confirmer" : "Annuler"}
+        destructive={confirmAction === "cancel"}
+        onConfirm={() => {
+          if (!id || !confirmAction) return;
+          onStatusChange?.(
+            id,
+            confirmAction === "confirm" ? "CONFIRMED" : "CANCELLED",
+          );
+        }}
+        onOpenChange={(openValue) => {
+          if (!openValue) setConfirmAction(null);
+        }}
+      />
+    </>
   );
 };
 

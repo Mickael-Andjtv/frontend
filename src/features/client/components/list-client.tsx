@@ -18,10 +18,10 @@ import { CustomerDetailsSheet } from "./client-detail";
 
 type Props = {
   clients: Customer[];
-  onSelectCustomer?: (customer: Customer) => void;
+  onUpdateCustomer?: (customer: Customer) => void;
 };
 
-const ListClientComponent = ({ clients, onSelectCustomer }: Props) => {
+const ListClientComponent = ({ clients, onUpdateCustomer }: Props) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
   const [selectedTier, setSelectedTier] = useState<string>("ALL");
@@ -264,6 +264,7 @@ const ListClientComponent = ({ clients, onSelectCustomer }: Props) => {
               key={client.id}
               customer={client}
               detail={<ClientCardComponent customer={client} />}
+              onUpdate={onUpdateCustomer}
             />
           ))}
         </div>

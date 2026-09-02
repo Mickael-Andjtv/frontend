@@ -1,4 +1,6 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -22,6 +24,7 @@ import {
   CheckCircle2,
   MessageSquareQuote,
 } from "lucide-react";
+import { ConfirmModal } from "@/components/layout/confirm-modal";
 
 type Props = {
   order: Order;
@@ -36,6 +39,7 @@ const OrderCardComponent = ({
   onReject,
   onStatusChange,
 }: Props) => {
+  const [showReject, setShowReject] = useState(false);
   const initials = `${order.customer.firstName?.[0] || ""}${
     order.customer.lastName?.[0] || ""
   }`.toUpperCase();
@@ -145,13 +149,15 @@ const OrderCardComponent = ({
                 key={it.id}
                 className="flex items-center gap-3 pb-2 border-b border-slate-100 last:border-b-0 last:pb-0"
               >
-                <div className="relative h-12 w-12  overflow-hidden shrink-0 bg-slate-100 border border-slate-200">
-                  <Image
-                    src={menu.imageUrl[0] ?? "/placeholder.png"}
-                    fill
-                    alt={menu.name}
-                    className="object-cover"
-                  />
+                <div className="relative h-12 w-12 overflow-hidden shrink-0 bg-slate-100 border border-slate-200">
+                  {menu.imageUrl[0] && (
+                    // eslint-disable-next-line @next/next/no-img-element -- backend http images unsupported by next/image optimizer
+                    <img
+                      src={menu.imageUrl[0]}
+                      alt={menu.name}
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
+                  )}
                   <span className="absolute bottom-0 right-0 bg-slate-900 text-white text-[10px] font-bold px-1 rounded-tl-md">
                     x{it.quantity}
                   </span>
@@ -210,7 +216,7 @@ const OrderCardComponent = ({
               <Button
                 variant="destructive"
                 className="w-full gap-1"
-                onClick={() => onReject?.(order.id)}
+                onClick={() => setShowReject(true)}
               >
                 <X className="w-4 h-4" /> Refuser
               </Button>
@@ -257,6 +263,16 @@ const OrderCardComponent = ({
           )}
         </div>
       </CardFooter>
+
+      <ConfirmModal
+        open={showReject}
+        title="Refuser la commande"
+        description={`Confirmer le refus de la commande ${order.orderNumber} pour ${order.customer.firstName} ${order.customer.lastName} (${order.totalAmount.toFixed(2)} €) ?`}
+        confirmLabel="Refuser"
+        destructive
+        onConfirm={() => onReject?.(order.id)}
+        onOpenChange={setShowReject}
+      />
     </Card>
   );
 };

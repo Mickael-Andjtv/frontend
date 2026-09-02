@@ -5,14 +5,17 @@ import { Search, SlidersHorizontal, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { RestaurantTable } from "../types/table";
+import { RestaurantTable, TableStatus } from "../types/table";
 import TableCard from "./table-card";
 
 type Props = {
   restaurantTables: RestaurantTable[];
+  onUpdateTable?: (table: RestaurantTable) => void;
+  onUpdateStatus?: (id: string, status: TableStatus) => void;
+  onDeleteTable?: (id: string) => void;
 };
 
-const ListTable = ({ restaurantTables }: Props) => {
+const ListTable = ({ restaurantTables, onUpdateTable, onUpdateStatus, onDeleteTable }: Props) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [capacityFilter, setCapacityFilter] = useState<number | "ALL">("ALL");
 
@@ -117,7 +120,13 @@ const ListTable = ({ restaurantTables }: Props) => {
       {filteredTables.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {filteredTables.map((table) => (
-            <TableCard key={table.id} resTable={table} />
+            <TableCard
+              key={table.id}
+              resTable={table}
+              onUpdateTable={onUpdateTable}
+              onUpdateStatus={onUpdateStatus}
+              onDeleteTable={onDeleteTable}
+            />
           ))}
         </div>
       ) : (

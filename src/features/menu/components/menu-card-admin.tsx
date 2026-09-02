@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { EyeOff, Layers, Edit, Trash2 } from "lucide-react";
 import { CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { MenuItem } from "../types/menu.types";
 import { BaseMenuCard } from "./base-menu-card";
 import { MenuFormSheet } from "./menu-form";
+import { ConfirmModal } from "@/components/layout/confirm-modal";
 
 type PropsAdmin = {
   menuItem: MenuItem;
@@ -28,6 +30,7 @@ export const MenuCardAdmin = ({
 }: PropsAdmin) => {
   const isAvailable = menuItem.status === "AVAILABLE";
   const optionGroupsCount = menuItem.optionGroups?.length ?? 0;
+  const [showDelete, setShowDelete] = useState(false);
 
   const badges = (
     <>
@@ -86,7 +89,7 @@ export const MenuCardAdmin = ({
           size="icon"
           variant="ghost"
           className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
-          onClick={() => onDelete?.(menuItem.id)}
+          onClick={() => setShowDelete(true)}
         >
           <Trash2 className="h-4 w-4" />
         </Button>
@@ -95,11 +98,22 @@ export const MenuCardAdmin = ({
   );
 
   return (
-    <BaseMenuCard
-      menuItem={menuItem}
-      headerBadges={badges}
-      footerActions={footer}
-      imageClassName={!isAvailable ? "grayscale contrast-75 opacity-60" : ""}
-    />
+    <>
+      <BaseMenuCard
+        menuItem={menuItem}
+        headerBadges={badges}
+        footerActions={footer}
+        imageClassName={!isAvailable ? "grayscale contrast-75 opacity-60" : ""}
+      />
+      <ConfirmModal
+        open={showDelete}
+        title="Supprimer le plat"
+        description={`Confirmer la suppression de « ${menuItem.name} » ? Cette action est irréversible.`}
+        confirmLabel="Supprimer"
+        destructive
+        onConfirm={() => onDelete?.(menuItem.id)}
+        onOpenChange={setShowDelete}
+      />
+    </>
   );
 };
