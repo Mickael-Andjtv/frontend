@@ -29,7 +29,7 @@ const items = [
   { title: "Réservation", url: "/reservation", icon: CalendarDays },
   { title: "Commande", url: "/order", icon: Receipt },
   { title: "Menu", url: "/menu", icon: UtensilsCrossed },
-  { title: "Client", url: "/client", icon: Users },
+  { title: "Client", url: "/admin/customers", icon: Users },
 ];
 
 export function AppSidebar() {

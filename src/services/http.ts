@@ -1,6 +1,26 @@
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
+const AUTH_TOKEN_KEY = "restaurant_auth_token";
+
+let authToken: string | null = null;
+
+export function initAuthToken(): void {
+  if (typeof window === "undefined") return;
+  authToken = window.localStorage.getItem(AUTH_TOKEN_KEY);
+}
+
+export function getAuthToken(): string | null {
+  return authToken;
+}
+
+export function setAuthToken(token: string | null): void {
+  authToken = token;
+  if (typeof window === "undefined") return;
+  if (token) window.localStorage.setItem(AUTH_TOKEN_KEY, token);
+  else window.localStorage.removeItem(AUTH_TOKEN_KEY);
+}
+
 export function resolveApiUrl(url: string): string {
   if (!url) return url;
   if (/^(blob:|data:|http:\/\/|https:\/\/|\/\/)/i.test(url)) return url;
@@ -37,6 +57,7 @@ async function request<T>(
     ...init,
     headers: {
       ...(init?.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
+      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
       ...init?.headers,
     },
   });

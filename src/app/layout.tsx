@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Raleway } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
+import { Providers } from "./providers";
 import "../styles/globals.css";
 
 const raleway = Raleway({
@@ -10,16 +11,16 @@ const raleway = Raleway({
 });
 
 export const metadata: Metadata = {
-  title: "Stock Management App",
+  title: "La Table d'Or",
   description:
-    "A Saas application for managing stock and inventory efficiently.",
+    "Une expérience culinaire moderne : découvrez nos plats, réservez une table et commandez en ligne.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${raleway.variable} h-full antialiased `}>
+    <html lang="fr" className={`${raleway.variable} h-full antialiased `}>
       <body className="min-h-full flex flex-col ">
-        {children}
+        <Providers>{children}</Providers>
         <Toaster position="top-right" richColors closeButton />
       </body>
     </html>

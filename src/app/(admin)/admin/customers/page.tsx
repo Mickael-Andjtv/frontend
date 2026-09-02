@@ -2,7 +2,7 @@
 
 import ClientView from "@/features/client/views/client-view";
 
-const ClientPage = () => {
+const CustomersAdminPage = () => {
   return (
     <div>
       <ClientView />
@@ -10,4 +10,4 @@ const ClientPage = () => {
   );
 };
 
-export default ClientPage;
+export default CustomersAdminPage;
