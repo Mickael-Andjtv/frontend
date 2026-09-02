@@ -25,6 +25,7 @@ import {
   MessageSquareQuote,
 } from "lucide-react";
 import { ConfirmModal } from "@/components/layout/confirm-modal";
+import { formatAr } from "@/lib/money";
 
 type Props = {
   order: Order;
@@ -182,7 +183,7 @@ const OrderCardComponent = ({
                 </div>
 
                 <div className="text-sm font-semibold text-slate-700">
-                  {(menu.price * it.quantity).toFixed(2)} €
+                  {formatAr(menu.price * it.quantity)}
                 </div>
               </div>
             );
@@ -210,7 +211,7 @@ const OrderCardComponent = ({
           <div className="text-right">
             <span className="text-xs text-slate-500 block">Total</span>
             <span className="text-lg font-extrabold text-slate-900">
-              {order.totalAmount.toFixed(2)} €
+              {formatAr(order.totalAmount)}
             </span>
           </div>
         </div>
@@ -280,7 +281,7 @@ const OrderCardComponent = ({
               onClick={() =>
                 setPendingStatus({
                   title: "Clôturer la commande",
-                  description: `Confirmer la clôture de la commande ${order.orderNumber} pour ${order.customer.firstName} ${order.customer.lastName} (${order.totalAmount.toFixed(2)} €) ?`,
+                  description: `Confirmer la clôture de la commande ${order.orderNumber} pour ${order.customer.firstName} ${order.customer.lastName} (${formatAr(order.totalAmount)}) ?`,
                   confirmLabel: "Clôturer",
                   status: "COMPLETED",
                 })
@@ -301,7 +302,7 @@ const OrderCardComponent = ({
       <ConfirmModal
         open={showReject}
         title="Refuser la commande"
-        description={`Confirmer le refus de la commande ${order.orderNumber} pour ${order.customer.firstName} ${order.customer.lastName} (${order.totalAmount.toFixed(2)} €) ?`}
+        description={`Confirmer le refus de la commande ${order.orderNumber} pour ${order.customer.firstName} ${order.customer.lastName} (${formatAr(order.totalAmount)}) ?`}
         confirmLabel="Refuser"
         destructive
         onConfirm={() => onReject?.(order.id)}

@@ -179,7 +179,7 @@ export function MenuFormSheet({
 
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <LabelComponent required htmfor="price" name="Prix (€)" />
+                <LabelComponent required htmfor="price" name="Prix (Ar)" />
                 <Input
                   id="price"
                   type="number"

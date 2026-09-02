@@ -44,8 +44,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .finally(() => {
         if (active) setLoading(false);
       });
+
+    // Keep the client session in sync with admin-side changes (level, points,
+    // status, ...). The database stays the single source of truth.
+    const syncTimer = setInterval(async () => {
+      if (!active) return;
+      try {
+        const current = await fetchCurrentCustomer();
+        if (active && current) {
+          setCustomer((prev) =>
+            prev && prev.updatedAt === current.updatedAt ? prev : current,
+          );
+        }
+      } catch {
+        // Ignore transient errors; session still valid.
+      }
+    }, 5000);
+
     return () => {
       active = false;
+      clearInterval(syncTimer);
     };
   }, []);
 

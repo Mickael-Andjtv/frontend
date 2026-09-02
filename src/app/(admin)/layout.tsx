@@ -7,7 +7,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <SidebarProvider>
       <AppSidebar />
       <main className="flex-1 flex flex-col h-screen overflow-hidden">
-        <NavBar notification={8} />
+        <NavBar />
         <div className="flex-1 overflow-y-auto">{children}</div>
       </main>
     </SidebarProvider>

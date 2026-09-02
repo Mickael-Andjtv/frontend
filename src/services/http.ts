@@ -112,3 +112,30 @@ export function apiPostFormData<T>(path: string, formData: FormData): Promise<T>
     body: formData,
   });
 }
+
+async function requestBlob(path: string, init?: RequestInit): Promise<Blob> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...init,
+    headers: {
+      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+      ...init?.headers,
+    },
+  });
+
+  if (!response.ok) {
+    let message = `Erreur HTTP ${response.status}`;
+    try {
+      const body = await response.json();
+      if (typeof body?.detail === "string") message = body.detail;
+    } catch {
+      // ignore
+    }
+    throw new ApiError(response.status, message);
+  }
+
+  return response.blob();
+}
+
+export function apiGetBlob(path: string): Promise<Blob> {
+  return requestBlob(path);
+}

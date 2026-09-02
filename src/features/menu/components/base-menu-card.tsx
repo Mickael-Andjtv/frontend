@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Clock } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { MenuItem } from "../types/menu.types";
+import { formatAr } from "@/lib/money";
 
 type BaseMenuCardProps = {
   menuItem: MenuItem;
@@ -88,7 +89,7 @@ export const BaseMenuCard = ({
               {menuItem.name}
             </h3>
             <span className="font-bold text-gray-900 text-base shrink-0">
-              {menuItem.price.toFixed(2)} €
+              {formatAr(menuItem.price)}
             </span>
           </div>
 

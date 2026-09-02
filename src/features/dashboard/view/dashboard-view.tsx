@@ -24,6 +24,7 @@ import {
   getPopularItems,
   getReservationsByDate,
 } from "@/services/dashboard";
+import { formatAr } from "@/lib/money";
 import type {
   DashboardStats,
   OrdersByStatus,
@@ -40,6 +41,7 @@ import {
   CartesianGrid,
   Tooltip,
 } from "recharts";
+import { usePolling } from "@/hooks/usePolling";
 
 const STATUS_LABELS: Record<string, string> = {
   PENDING: "En attente",
@@ -58,13 +60,6 @@ const STATUS_COLORS: Record<string, string> = {
   COMPLETED: "bg-slate-500",
   CANCELLED: "bg-rose-500",
 };
-
-const formatEuro = (value: number) =>
-  new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency: "EUR",
-    maximumFractionDigits: 0,
-  }).format(value ?? 0);
 
 function StatCard({
   label,
@@ -143,11 +138,11 @@ function RevenueChart({ data }: { data: RevenueByDate[] }) {
             tick={{ fontSize: 11, fill: "#64748b" }}
             tickLine={false}
             axisLine={false}
-            tickFormatter={(value: number) => `${Math.round(value)} €`}
+            tickFormatter={(value: number) => formatAr(value)}
             width={56}
           />
           <Tooltip
-            formatter={(value) => [formatEuro(Number(value)), "Revenus"]}
+            formatter={(value) => [formatAr(Number(value)), "Revenus"]}
             labelFormatter={(label, payload) =>
               payload?.[0]?.payload?.date
                 ? formatDay(payload[0].payload.date as string)
@@ -241,6 +236,31 @@ const DashboardView = () => {
     return () => controller.abort();
   }, []);
 
+  usePolling(() => {
+    Promise.all([
+      getDashboardStats(),
+      getOrdersByStatus(),
+      getRevenueByDate(14),
+      getPopularItems(8),
+      getReservationsByDate(14),
+    ])
+      .then(([
+        fetchedStats,
+        fetchedStatuses,
+        fetchedRevenue,
+        fetchedPopular,
+        fetchedReservations,
+      ]) => {
+        setStats(fetchedStats);
+        setOrdersByStatus(fetchedStatuses);
+        setRevenue(fetchedRevenue.reverse());
+        setPopularItems(fetchedPopular);
+        setReservations(fetchedReservations.reverse());
+        setError(null);
+      })
+      .catch(() => {});
+  }, 15000);
+
   if (loading) {
     return (
       <div className="p-6 space-y-4">
@@ -292,12 +312,12 @@ const DashboardView = () => {
         />
         <StatCard
           label="Revenus totaux"
-          value={`${stats.totalRevenue.toFixed(2)} €`}
+          value={formatAr(stats.totalRevenue)}
           icon={<Banknote className="h-4 w-4 text-slate-400" />}
         />
         <StatCard
           label="Aujourd&apos;hui"
-          value={`${stats.ordersToday} cmd · ${stats.revenueToday.toFixed(2)} €`}
+          value={`${stats.ordersToday} cmd · ${formatAr(stats.revenueToday)}`}
           hint={`${stats.pendingReservations} réservations en attente`}
           icon={<CalendarClock className="h-4 w-4 text-slate-400" />}
         />
@@ -310,7 +330,7 @@ const DashboardView = () => {
               Revenus (14 derniers jours)
             </CardTitle>
             <span className="text-xs text-slate-400">
-              Total : {formatEuro(revenue.reduce((s, e) => s + e.revenue, 0))}
+              Total : {formatAr(revenue.reduce((s, e) => s + e.revenue, 0))}
             </span>
           </CardHeader>
           <CardContent>
@@ -371,14 +391,14 @@ const DashboardView = () => {
                   <p className="text-sm font-semibold text-slate-800 truncate">
                     {item.name}
                   </p>
-                  <p className="text-xs text-slate-500">{item.price.toFixed(2)} €</p>
+                  <p className="text-xs text-slate-500">{formatAr(item.price)}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-bold text-slate-900">
                     {item.totalQuantity} vendus
                   </p>
                   <p className="text-xs text-slate-500">
-                    {item.totalRevenue.toFixed(2)} €
+                    {formatAr(item.totalRevenue)}
                   </p>
                 </div>
               </div>

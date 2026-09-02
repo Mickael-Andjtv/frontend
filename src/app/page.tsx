@@ -40,6 +40,7 @@ import {
 import { getMenuItems } from "@/services/menu";
 import { getCategories } from "@/services/categories";
 import type { MenuItem } from "@/features/menu/types/menu.types";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const currency = (value: number) => `${value.toLocaleString("fr-FR")} Ar`;
@@ -53,7 +54,8 @@ const EXPERIENCE_IMAGE =
 
 export default function Home() {
   const { isAuthenticated } = useAuth();
-  const { addItem, openCart } = useCart();
+  const { addItem } = useCart();
+  const router = useRouter();
   const [items, setItems] = useState<MenuItem[]>([]);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("ALL");
@@ -284,8 +286,12 @@ export default function Home() {
                       <Button
                         className="mt-4 w-full"
                         onClick={() => {
+                          if (!isAuthenticated) {
+                            requireAuth("/client/menu");
+                            return;
+                          }
                           addItem(item);
-                          openCart();
+                          router.push("/client/menu");
                         }}
                       >
                         Ajouter au panier

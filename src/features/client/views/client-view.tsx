@@ -9,6 +9,7 @@ import { CustomerFormSheet } from "../components/client-form";
 import { getCustomers, createCustomer, updateCustomer } from "@/services/customers";
 import type { CreateCustomerPayload } from "@/services/customers";
 import type { Customer } from "../types/client.types";
+import { usePolling } from "@/hooks/usePolling";
 
 const ClientView = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -41,6 +42,15 @@ const ClientView = () => {
     return () => controller.abort();
   }, []);
 
+  usePolling(() => {
+    getCustomers()
+      .then((fetched) => {
+        setCustomers(fetched);
+        setError(null);
+      })
+      .catch(() => {});
+  }, 10000);
+
   const handleCreate = async (data: CreateCustomerPayload) => {
       try {
         await createCustomer(data);
@@ -53,17 +63,18 @@ const ClientView = () => {
 
     const handleUpdate = async (customer: Customer) => {
       try {
-        await updateCustomer(customer.id, {
+        const updated = await updateCustomer(customer.id, {
           firstName: customer.firstName,
           lastName: customer.lastName,
           phone: customer.phone,
           image: customer.image ?? null,
           status: customer.status,
           preferences: customer.preferences,
+          loyalty: customer.loyalty,
         });
         toast.success("Client mis à jour");
         setCustomers((prev) =>
-          prev.map((c) => (c.id === customer.id ? customer : c)),
+          prev.map((c) => (c.id === updated.id ? updated : c)),
         );
       } catch (err) {
         toast.error(err instanceof Error ? err.message : "Erreur lors de la mise à jour");

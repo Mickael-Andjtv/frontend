@@ -148,7 +148,7 @@ const ListClientComponent = ({ clients, onUpdateCustomer }: Props) => {
                   Nom (A-Z)
                 </SelectItem>
                 <SelectItem value="spent-desc" className="rounded-none">
-                  Dépenses (€) décroissantes
+                  Dépenses (Ar) décroissantes
                 </SelectItem>
                 <SelectItem value="orders-desc" className="rounded-none">
                   Nombre de commandes

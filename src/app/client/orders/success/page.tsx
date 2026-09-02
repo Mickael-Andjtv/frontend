@@ -3,11 +3,14 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
-import { CheckCircle2, Loader2, Receipt, UtensilsCrossed, ArrowRight } from "lucide-react";
+import { CheckCircle2, Loader2, Receipt, UtensilsCrossed, ArrowRight, Download } from "lucide-react";
 import { getClientOrder } from "@/features/client/services/client-orders";
 import type { Order } from "@/features/order/types/order-types";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { downloadInvoice } from "@/services/invoices";
 
 export default function OrderSuccessPage() {
   const searchParams = useSearchParams();
@@ -49,6 +52,23 @@ export default function OrderSuccessPage() {
       ? `${window.location.origin}/client/orders?focus=${order.id}`
       : order.id;
   const qrValue = JSON.stringify({ orderId: order.id, orderNumber: order.orderNumber, tracking: trackingUrl });
+
+  const handleDownload = async () => {
+    try {
+      const blob = await downloadInvoice(order.id);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `facture-${order.id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      toast.success("Facture téléchargée");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erreur lors du téléchargement");
+    }
+  };
 
   return (
     <div className="mx-auto max-w-xl space-y-6 text-center">
@@ -102,6 +122,9 @@ export default function OrderSuccessPage() {
         <ButtonLink href="/client/orders">
           Suivre ma commande <ArrowRight className="h-4 w-4" />
         </ButtonLink>
+        <Button variant="outline" onClick={handleDownload} className="gap-2">
+          <Download className="h-4 w-4" /> Télécharger la facture
+        </Button>
         <ButtonLink href="/client/menu" variant="outline">
           <UtensilsCrossed className="h-4 w-4" /> Commander encore
         </ButtonLink>

@@ -9,6 +9,7 @@ import {
   BellRing,
   Loader2,
   PackageOpen,
+  Download,
 } from "lucide-react";
 import { useAuth } from "@/features/auth/auth-context";
 import { getClientOrders } from "@/features/client/services/client-orders";
@@ -20,6 +21,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { downloadInvoice } from "@/services/invoices";
 
 const STATUS_STEPS: { status: OrderStatus; label: string; icon: typeof Clock }[] = [
   { status: "PENDING", label: "En attente", icon: Clock },
@@ -56,6 +58,23 @@ export default function ClientOrdersPage() {
 
   const orderCompletedSeen = (order: Order) =>
     order.status === "COMPLETED" || order.status === "CANCELLED";
+
+  const handleDownload = async (orderId: string) => {
+    try {
+      const blob = await downloadInvoice(orderId);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `facture-${orderId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      toast.success("Facture téléchargée");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erreur lors du téléchargement");
+    }
+  };
 
   const fetchOrders = useCallback(async () => {
     if (!customer) return;
@@ -138,9 +157,20 @@ export default function ClientOrdersPage() {
                 order.status}
             </Badge>
           </div>
-          <span className="text-sm font-semibold">
-            {order.totalAmount.toLocaleString("fr-FR")} Ar
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-semibold">
+              {order.totalAmount.toLocaleString("fr-FR")} Ar
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleDownload(order.id)}
+              className="gap-1.5 text-xs"
+            >
+              <Download className="h-3.5 w-3.5" />
+              Facture
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="mb-4 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
@@ -269,6 +299,15 @@ export default function ClientOrdersPage() {
                 <span className="text-sm font-semibold">
                   {order.totalAmount.toLocaleString("fr-FR")} Ar
                 </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleDownload(order.id)}
+                  className="gap-1.5 text-xs"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  Facture
+                </Button>
               </CardContent>
             </Card>
           ))}

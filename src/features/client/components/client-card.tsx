@@ -5,6 +5,7 @@ import { Customer } from "../types/client.types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Mail, Phone, Calendar, ShoppingBag, ShieldAlert } from "lucide-react";
+import { formatAr } from "@/lib/money";
 
 type Props = {
   customer: Customer;
@@ -121,7 +122,7 @@ const ClientCardComponent = ({ customer }: Props) => {
             <div className="flex items-center gap-1.5">
               <ShoppingBag className="w-3.5 h-3.5 text-slate-400" />
               <span>
-                {customer.stats.totalOrders} cmd ({customer.stats.totalSpent}€)
+                {customer.stats.totalOrders} cmd ({formatAr(customer.stats.totalSpent)})
               </span>
             </div>
             <div className="flex items-center gap-1.5 justify-end">

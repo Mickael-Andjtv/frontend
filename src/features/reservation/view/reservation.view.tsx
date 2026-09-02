@@ -13,6 +13,7 @@ import { getTables } from "@/services/tables";
 import type { Reservation, ReservationStatus } from "../types/reservation.type";
 import type { RestaurantTable } from "@/features/restaurant-table/types/table";
 import { naturalCompare } from "@/lib/utils";
+import { usePolling } from "@/hooks/usePolling";
 
 const ReservationView = () => {
   const [reservations, setReservations] = useState<Reservation[]>([]);
@@ -62,6 +63,18 @@ const ReservationView = () => {
       .finally(() => setLoading(false));
     return () => controller.abort();
   }, []);
+
+  usePolling(() => {
+    Promise.all([getReservations(), getTables()])
+      .then(([fetchedReservations, fetchedTables]) => {
+        setReservations(fetchedReservations);
+        setTables(
+          [...fetchedTables].sort((a, b) => naturalCompare(a.num, b.num)),
+        );
+        setError(null);
+      })
+      .catch(() => {});
+  }, 10000);
 
   const handleUpdateReservation = async (
     reservationId: string,

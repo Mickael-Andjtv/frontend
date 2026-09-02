@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ListOrderComponent from "../components/list-order";
 import { getOrders, updateOrderStatus } from "@/services/orders";
 import type { Order } from "../types/order-types";
+import { usePolling } from "@/hooks/usePolling";
 
 const OrderView = () => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -56,6 +57,15 @@ const OrderView = () => {
       .finally(() => setLoading(false));
     return () => controller.abort();
   }, []);
+
+  usePolling(() => {
+    getOrders()
+      .then((fetched) => {
+        setOrders(fetched);
+        setLoadError(null);
+      })
+      .catch(() => {});
+  }, 10000);
 
   const activeOrders = useMemo(() => {
     return orders
@@ -237,7 +247,7 @@ const OrderView = () => {
                         Plus anciens
                       </SelectItem>
                       <SelectItem value="amount-desc" className="rounded-none">
-                        Montant (€) décroissant
+                        Montant (Ar) décroissant
                       </SelectItem>
                     </SelectContent>
                   </Select>

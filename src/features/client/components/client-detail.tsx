@@ -24,9 +24,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { Customer } from "../types/client.types";
+import { Customer, LoyaltyTier } from "../types/client.types";
 import { Mail, Phone, UserCheck, Award } from "lucide-react";
 import { ConfirmModal } from "@/components/layout/confirm-modal";
+import { formatAr } from "@/lib/money";
 
 type Props = {
   customer: Customer;
@@ -39,6 +40,19 @@ const TIER_BADGES: Record<string, string> = {
   SILVER: "bg-slate-400 text-white hover:bg-slate-400",
   GOLD: "bg-amber-500 text-white hover:bg-amber-500",
   VIP: "bg-purple-600 text-white hover:bg-purple-600",
+};
+
+const TIER_THRESHOLDS: [number, string][] = [
+  [3000, "VIP"],
+  [2000, "GOLD"],
+  [1000, "SILVER"],
+];
+
+const computeTier = (points: number): LoyaltyTier => {
+  for (const [threshold, tier] of TIER_THRESHOLDS) {
+    if (points >= threshold) return tier as LoyaltyTier;
+  }
+  return "BRONZE";
 };
 
 export const CustomerDetailsSheet = ({ customer, detail, onUpdate }: Props) => {
@@ -232,13 +246,15 @@ export const CustomerDetailsSheet = ({ customer, detail, onUpdate }: Props) => {
                       type="number"
                       value={data.loyalty.points}
                       onChange={(e) => {
-                        setData({
-                          ...data,
+                        const points = Number(e.target.value);
+                        setData((prev) => ({
+                          ...prev,
                           loyalty: {
-                            ...data.loyalty,
-                            points: Number(e.target.value),
+                            ...prev.loyalty,
+                            points,
+                            tier: computeTier(points),
                           },
-                        });
+                        }));
                       }}
                       className="rounded-none h-9 text-xs border-slate-200"
                     />
@@ -296,7 +312,7 @@ export const CustomerDetailsSheet = ({ customer, detail, onUpdate }: Props) => {
                       </span>
 
                       <span className="text-xs font-bold text-slate-800">
-                        {data.stats.totalSpent}€
+                        {formatAr(data.stats.totalSpent)}
                       </span>
                     </div>
 

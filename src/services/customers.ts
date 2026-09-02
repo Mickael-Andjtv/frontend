@@ -1,5 +1,5 @@
 import { apiGet, apiPost, apiPut } from "./http";
-import type { Customer, CustomerPreferences, CustomerStatus, LoyaltyTier } from "@/features/client/types/client.types";
+import type { Customer, CustomerLoyalty, CustomerPreferences, CustomerStatus, LoyaltyTier } from "@/features/client/types/client.types";
 
 interface CustomerDto {
   id: string;
@@ -41,6 +41,7 @@ export type UpdateCustomerPayload = {
   image?: string | null;
   status?: CustomerStatus;
   preferences?: CustomerPreferences;
+  loyalty?: CustomerLoyalty;
 };
 
 function mapCustomer(dto: CustomerDto): Customer {
@@ -78,7 +79,7 @@ function mapCustomer(dto: CustomerDto): Customer {
 }
 
 export async function getCustomers(): Promise<Customer[]> {
-  const customers = await apiGet<CustomerDto[]>("/api/customers");
+  const customers = await apiGet<CustomerDto[]>("/api/customers?limit=500");
   return customers.map(mapCustomer);
 }
 
